@@ -3,8 +3,7 @@
 
 ## Description
 An Arduino-based mini keyboard with a joystick as mouse, for use as a media PC remote control or in other applications.
-Uses a
-This project is now using an Arduino Micro as controller, but will change to using STM32F103C8T6 (Blue Pill) and [CH9329](https://www.alldatasheet.com/datasheet-pdf/pdf/1148630/WCH/CH9329.html) in the future.
+This project is now using an Arduino Micro as controller, but will switch to use STM32F103C8T6 (Blue Pill) and [CH9329](https://www.alldatasheet.com/datasheet-pdf/pdf/1148630/WCH/CH9329.html) instead in the future.
 Only supports wired connection for now. BLE connection capabilities may be added later.
 
 ## To-Do List
