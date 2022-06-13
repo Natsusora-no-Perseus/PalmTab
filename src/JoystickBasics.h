@@ -1,4 +1,4 @@
-/* JoystickBasics.cpp - A simple library created to setup, calibrate and read from joysticks.
+/* JoystickBasics.h - A simple library created to setup, calibrate and read from joysticks.
  *
  * Created by Natsusora-no-Perseus@GitHub.
  * Date: 2022/06/23 (YYYY/MM/DD)
@@ -6,33 +6,30 @@
  * License: GPLv3 or higher.
 */
 
-#include "JoystickBasics.h"
+#ifndef NIF_h
+#define NIF_h
 
-JoystickBasics::JoystickBasics(uint8_t inputPin, uint16_t midPoint, bool invertInput)
-{
-	_inputPin = inputPin;
-	_invertInput = invertInput;
-	_midPoint = midPoint;
-}
+#include "Arduino.h"
 
-void JoystickBasics::calibrateInput()
+class JoystickBasics
 {
-	_calibrationValue = _midPoint - analogRead(_inputPin);
-}
+public:
 
-void JoystickBasics::setSensitivity(uint8_t sensitivityFactor)
-{
-	_sensitivityFactor = sensitivityFactor;
-}
+	void calibrateInput();
+	void setSensitivity(uint8_t sensitivityFactor);
 
-int16_t JoystickBasics::getPos()
-{
-	if (_invertInput == true)
-	{
-		return (_midPoint - analogRead(_inputPin) - _calibrationValue);
-	}
-	else
-	{
-		return (analogRead(_inputPin) - _midPoint + _calibrationValue);
-	}
-}
+	int16_t getPos();
+
+	JoystickBasics(uint8_t inputPin, uint16_t midPoint, bool invertInput);
+
+private:
+
+	bool _invertInput;
+	uint8_t _sensitivityFactor;
+	uint8_t _inputPin;
+	uint16_t _midPoint;
+	int16_t _calibrationValue;
+
+};
+
+#endif
