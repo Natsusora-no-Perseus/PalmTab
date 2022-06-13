@@ -6,6 +6,9 @@
  * License: GPLv3 or higher.
 */
 
+#ifndef NIF_h
+#define NIF_h
+
 #include "Arduino.h"
 
 class JoystickBasics
@@ -28,3 +31,5 @@ private:
 	int16_t _calibrationValue;
 
 };
+
+#endif
