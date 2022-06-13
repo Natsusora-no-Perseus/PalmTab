@@ -8,7 +8,7 @@
 
 #include "JoystickBasics.h"
 
-JoystickBasics::JoystickBasics(uint8_t inputPin, bool invertInput)
+JoystickBasics::JoystickBasics(uint8_t inputPin, uint16_t midPoint, bool invertInput)
 {
 	_inputPin = inputPin;
 	_invertInput = invertInput;
@@ -20,7 +20,7 @@ void JoystickBasics::calibrateInput()
 	_calibrationValue = _midPoint - analogRead(_inputPin);
 }
 
-void JoystickBasics::setSensitivity(uint16_t sensitivityFactor)
+void JoystickBasics::setSensitivity(uint8_t sensitivityFactor)
 {
 	_sensitivityFactor = sensitivityFactor;
 }
