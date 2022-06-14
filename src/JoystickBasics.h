@@ -6,8 +6,8 @@
  * License: GPLv3 or higher.
 */
 
-#ifndef NIF_h
-#define NIF_h
+#ifndef JoystickBasics_h
+#define JoystickBasics_h
 
 #include "Arduino.h"
 
