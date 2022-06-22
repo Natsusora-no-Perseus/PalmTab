@@ -83,11 +83,11 @@ NodePos CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance,
 	shiftedPoint2.xPos += _midpointsList[nodeIndex + 1].xPos;
 	shiftedPoint2.yPos += _midpointsList[nodeIndex + 1].yPos;//Shifts without scaling
 
-	shiftedPoint1.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * scalingFactor);
-	shiftedPoint1.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * scalingFactor);
+	shiftedPoint1.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * _scalingFactor);
+	shiftedPoint1.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * _scalingFactor);
 
-	shiftedPoint2.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * scalingFactor);
-	shiftedPoint2.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * scalingFactor);
+	shiftedPoint2.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * _scalingFactor);
+	shiftedPoint2.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * _scalingFactor);
 
 	_shiftedPointsList[2 * nodeIndex] = shiftedPoint1;
 	_shiftedPointsList[2 * nodeIndex + 1] = shiftedPoint2;
@@ -103,3 +103,58 @@ NodePos CurveEditor::updateShift()
 	}
 }
 
+void CurveEditor::setScalingFactor(float scalingFactor)
+{
+	_scalingFactor = scalingFactor;
+}
+
+void CurveEditor::setBezierSubIntv(uint8_t inputSubIntv)
+{
+	bezierSubIntv = inputSubIntv;
+}
+
+FloatNodePos CurveEditor::getTPoint(FloatNodePos point1, FloatNodePos point2, float tValue)//Gets point at (tValue)th of the line segment
+{
+	FloatNodePos outputVal;
+	outputVal.xPos = (point2.xPos - point1.xPos) * tValue + point1.xPos;
+	outputVal.yPos = (point2.yPos - point1.yPos) * tValue + point1.xPos;
+	
+	return outputVal;
+}
+
+NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point on bezier curve at tValue.
+{
+	vector<FloatNodePos> recursiveNodes(_shiftedPointsList.size() - 1);
+	
+	for (uint8_t i = 0; i <= _shiftedPointsList.size() - 1; i++)//Sets recursiveNodes to 1st level of recursion
+	{
+		recursiveNodes[i] = getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue);
+	}
+	
+	uint8_t recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
+	
+	for (uint8_t n = 0; n < recursionDepth; n++)
+	{
+		for (uint8_t m = 0; m < recursionDepth - n; n++)
+		{
+			recursiveNodes[m] = getTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
+		}
+		
+		recursiveNodes.resize(recursionDepth - n);
+	}
+	
+	uint8_t outputVal = round(recursiveNodes[0]);
+	return (outputVal);
+}
+
+NodePos CurveEditor::bezierList()//Places nodes in _resultNodes.
+{
+	float tValueNow;
+	for (uint8_t intvCount = 0; intvCount <= bezierSubIntv; intvCount++)
+	{
+		tValueNow = intvCount * (1 / bezierSubIntv);
+		
+		_resultNodes.push_back(bezierRecursive(tValueNow));
+	}
+	_resultNodes.resize(bezierSubIntv + 1);
+}
