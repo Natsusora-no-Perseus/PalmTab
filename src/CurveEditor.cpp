@@ -158,3 +158,12 @@ NodePos CurveEditor::bezierList()//Places nodes in _resultNodes.
 	}
 	_resultNodes.resize(bezierSubIntv + 1);
 }
+
+void CurveEditor::updateAll()//Update everything in sequence to generate a new LUT; call after setNode().
+{
+	updateMidpoint();
+	updateShift();
+	_midpointsList.resize(2);//Destroy _midpointsList to save memory.
+	bezierList();
+	_shiftedPointsList.resize(2);//Destory _shiftedPointsList to save memory.
+}
