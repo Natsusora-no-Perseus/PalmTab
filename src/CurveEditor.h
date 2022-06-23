@@ -18,7 +18,14 @@ public:
 
 	CurveEditor();
 
+	/* Mutator functions: */
 	bool setNode(int8_t nodeXPos, int8_t nodeYPos);//Returns false if node can't be set
+	void setScalingFactor(float scalingFactor);//Should be set between 0~1. Larger = "sharper" curve. Suggested value is 0.6.
+	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage.
+
+	/* Process functions: */
+	//Process for setting up a curve: setNode => updateMidpoint => updateShift => bezierList
+	void updateAll();//Updates everything and generates a new list of output nodes
 
 
 
@@ -48,25 +55,19 @@ private:
 	
 	
 
+	/* Utility functions for use inside this library: */
 	NodePos getMidpoint(uint8_t nodeIndex);//Find midpoint between this node and next node
-
-	NodePos updateMidpoint();//Updates list of midpoints
-
 	uint8_t getLength(uint8_t nodeIndex);//Find distance between this node and next node
-
 	NodePos getShiftDist(uint8_t nodeIndex);//Find shift distance for this and next midpoint
+	FloatNodePos getTPoint(FloatNodePos point1, FloatNodePos point2, float tValue);//Gets point at (tValue)th of the line segment
+	NodePos bezierRecursive(float tValue);//Gets the point on bezier curve at tValue.
 
+	/* Process functions in this library: */
+	NodePos updateMidpoint();//Updates list of midpoints
 	NodePos updateShift();//Updates list shifted midpoints (also control points for bezier curve)
+	NodePos bezierList();//Places nodes in _resultNodes, for LUT use.
 
-	void setScalingFactor(float scalingFactor);//Should be set between 0~1. Larger = "sharper" curve. Suggested value is 0.6.
-	
-	void setBezierSubIntv(uint8_t inputSubIntv);
-	
-	FloatNodePos getTPoint(FloatNodePos point1, FloatNodePos point2, float tValue)//Gets point at (tValue)th of the line segment
-	
-	NodePos bezierRecursive(float tValue)//Gets the point on bezier curve at tValue.
-	
-	NodePos bezierList()//Places nodes in _resultNodes.
+
 };
 
 #endif
