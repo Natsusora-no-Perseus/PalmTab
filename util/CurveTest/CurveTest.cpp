@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h>>
+#include <stdio.h>
 
 using namespace std;
 
@@ -70,6 +70,8 @@ int main()
 		outtext(xPosStr);
 		moveto(763, 40);
 		outtext(yPosStr);
+		
+		
     }
 	
 	delay(500);
