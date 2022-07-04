@@ -22,26 +22,34 @@ using namespace std;
 class CurveEditor
 {
 public:
-	CurveEditor();
+	//CurveEditor();
+	
+	struct NodePos
+	{
+		uint8_t xPos;
+		uint8_t yPos;
+	};
 
 	/* Mutator functions: */
-	bool setNode(int8_t nodeXPos, int8_t nodeYPos);//Returns false if node can't be set
+	bool setNode(uint8_t nodeXPos, uint8_t nodeYPos);//Returns false if node can't be set
 	void setScalingFactor(float scalingFactor);//Should be set between 0~1. Larger = "sharper" curve. Suggested value is 0.6.
 	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage.
+	
+	/* Accessor functions: */
+	NodePos getNode(uint8_t nodeIndex);//Returns nodeIndex'th user defined node.
+	uint8_t getCurveVal(uint8_t curveXPos);//Returns the Y coordinate corresponding to curveXPos.
+	
 
 	/* Process functions: */
 	//Process for setting up a curve: setNode => updateMidpoint => updateShift => bezierList
 	void updateAll();//Updates everything and generates a new list of output nodes
+	void updateMidpoint();//Updates list of midpoints
+	void updateShift();//Updates list shifted midpoints (also control points for bezier curve)
+	void bezierList();//Places nodes in _resultNodes, for LUT use.
 
 
 
 private:
-
-	struct NodePos
-	{
-		int8_t xPos;
-		int8_t yPos;
-	};
 	
 	vector<NodePos> _nodesList;//Stores list of NodePos
 	vector<NodePos> _midpointsList;//Stores list of midpoints
@@ -58,16 +66,18 @@ private:
 	/* Utility functions for use inside this library: */
 	NodePos getMidpoint(uint8_t nodeIndex);//Find midpoint between this node and next node
 	uint8_t getLength(uint8_t nodeIndex);//Find distance between this node and next node
-	NodePos getShiftDist(uint8_t nodeIndex);//Find shift distance for this and next midpoint
+	void getShiftDist(uint8_t nodeIndex);//Find shift distance for this and next midpoint
 	NodePos getTPoint(NodePos point1, NodePos point2, float tValue);//Gets point at (tValue)th of the line segment
 	NodePos bezierRecursive(float tValue);//Gets the point on bezier curve at tValue.
 
 	/* Process functions in this library: */
-	void updateMidpoint();//Updates list of midpoints
-	void updateShift();//Updates list shifted midpoints (also control points for bezier curve)
-	void bezierList();//Places nodes in _resultNodes, for LUT use.
+	//void updateMidpoint();//Updates list of midpoints
+	//void updateShift();//Updates list shifted midpoints (also control points for bezier curve)
+	//void bezierList();//Places nodes in _resultNodes, for LUT use.
 
 
 };
 
 #endif
+
+
