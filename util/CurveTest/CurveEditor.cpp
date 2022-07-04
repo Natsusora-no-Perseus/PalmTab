@@ -172,6 +172,3 @@ void CurveEditor::updateAll()//Update everything in sequence to generate a new L
 }
 
 
-
-
-
