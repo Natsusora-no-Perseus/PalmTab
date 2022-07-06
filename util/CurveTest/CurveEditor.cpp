@@ -14,19 +14,30 @@ bool CurveEditor::setNode(uint8_t nodeXPos, uint8_t nodeYPos)
 	NodePos newNode;
 	newNode.xPos = nodeXPos;
 	newNode.yPos = nodeYPos;
-	_nodesList.push_back(newNode);
-	uint8_t nodeIndex = _nodesList.size() - 1;
+	
+	//_nodesList.push_back(newNode);
+	//uint8_t nodeIndex = _nodesList.size() - 1;
 
-	if (nodeIndex == 1)
+	if (_nodesList.size() == 0)
 	{
+		_nodesList.push_back(newNode);
 		return true;//First node created, no problem
 	}
-	else if (_nodesList[nodeIndex].xPos == _nodesList[nodeIndex - 1].xPos)
+	
+	uint8_t nodeIndex = _nodesList.size() - 1;//Sets nodeIndex to last node in index
+	
+	for (int i = 0; i <= nodeIndex; i++)
 	{
-		return false;//Two vertically overlapping nodes, illegal
+		if (nodeXPos == _nodesList[i].xPos)
+		{
+			return false;//Two vertically overlapping nodes, illegal
+		}
 	}
-	else if (nodeIndex != 1)
+	
+	if (nodeIndex != 0)
 	{
+		_nodesList.push_back(newNode);//Legal node, push back
+		nodeIndex += 1;
 		while (_nodesList[nodeIndex - 1].xPos > _nodesList[nodeIndex].xPos)
 		{
 			swap(_nodesList[nodeIndex - 1], _nodesList[nodeIndex]);//Rearrange nodesList by order of increasing xPos
@@ -140,10 +151,10 @@ CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, floa
 {
 	NodePos outputVal;
 	double tempVal;
-	//tempVal = (point2.xPos - point1.xPos) * tValue + point1.xPos;
-	outputVal.xPos = 50;
-	//outputVal.yPos = round((point2.yPos - point1.yPos) * tValue + point1.yPos);
-	outputVal.yPos = 50;
+	tempVal = (point2.xPos - point1.xPos) * tValue + point1.xPos;
+	outputVal.xPos = round(tempVal);
+	tempVal = (point2.yPos - point1.yPos) * tValue + point1.yPos;
+	outputVal.yPos = round(tempVal);
 	
 	return outputVal;
 }
@@ -162,6 +173,7 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 	
 	uint8_t recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
 	
+	
 	for (uint8_t n = 0; n < recursionDepth; n++)
 	{
 		for (uint8_t m = 0; m < recursionDepth - n; n++)
@@ -171,6 +183,7 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
+	
 	
 	return (recursiveNodes[0]);
 }
@@ -240,3 +253,22 @@ uint8_t CurveEditor::getCurveVal(uint8_t curveXPos)//Returns the Y coordinate co
 
 
 
+int CurveEditor::chkShiftedSize()
+{
+	return (_shiftedPointsList.size());
+}
+
+int CurveEditor::chkMidptSize()
+{
+	return (_midpointsList.size());
+}
+
+int CurveEditor::chkNodesSize()
+{
+	return (_nodesList.size());
+}
+
+int CurveEditor::tempNodePos(uint8_t tempNodeNo)
+{
+	return (_resultNodes[tempNodeNo / 8].yPos);
+}
