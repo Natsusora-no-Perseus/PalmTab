@@ -65,6 +65,13 @@ int main()
 	int yReturnVal = 42;
 	bool canDrawCurve = false;
 	
+	testCurve.setNode(10, 10);
+	testCurve.setNode(30, 40);
+	testCurve.setNode(90, 120);
+	testCurve.setNode(120, 60);
+	testCurve.setNode(130, 40);
+	testCurve.setNode(160, 50);
+	
 	while (!(ismouseclick(WM_LBUTTONDOWN) && ((mousex() >= 750) && (mousey() >= 575))))
     {
         //# Menu Bar:
@@ -94,8 +101,8 @@ int main()
 			if (mousey() >= 100 && mousey() <= 140)
 			{	
 				testCurve.updateMidpoint();
-				testCurve.updateShift();
-				testCurve.bezierList();
+				//testCurve.updateShift();
+				//testCurve.bezierList();
 				canDrawCurve = true;
 			}
 		}
@@ -113,15 +120,15 @@ int main()
 		
 		//*Test Curve:*
 		//Note: Conversion method: n * 2 + 50.
+		/*
 		testCurve.setNode(10, 10);
 		testCurve.setNode(30, 40);
 		testCurve.setNode(90, 120);
 		testCurve.setNode(120, 60);
 		testCurve.setNode(130, 40);
 		testCurve.setNode(160, 50);
-		
-		
-		
+		*/
+
 		
 		drawNode(70, 70);
 		drawNode(110, 130);
@@ -139,7 +146,58 @@ int main()
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
 				drawNode(i, yReturnVal);
+
 			}
+			
+			/*
+			char chkShiftedChar[5];
+			sprintf(chkShiftedChar, "%i", testCurve.chkShiftedSize());
+			moveto(100, 50);
+			outtext(chkShiftedChar);
+				
+			char chkMidptChar[5];
+			sprintf(chkMidptChar, "%i", testCurve.chkMidptSize());
+			moveto(100, 70);
+			outtext(chkMidptChar);
+				
+			char chkNodesChar[5];
+			sprintf(chkNodesChar, "%i", testCurve.chkNodesSize());
+			moveto(100, 90);
+			outtext(chkNodesChar);
+			
+			moveto(200, 1);
+			
+			char chkResultChar[5];
+			
+			for (int i = 0; i < 50; i += 1)
+			{
+				moveto(570, i * 12);
+				sprintf(chkResultChar, "%i", testCurve._resultNodes[i].yPos);
+				outtext(chkResultChar);
+			}
+			for (int i = 50; i < 100; i += 1)
+			{
+				moveto(625, (i-50) * 12);
+				sprintf(chkResultChar, "%i", testCurve._resultNodes[i].yPos);
+				outtext(chkResultChar);
+			}
+			
+			char chkGeneralNodesChar[5];
+			for (int i = 0; i <= 5; i += 1)
+			{
+				moveto(625, i * 20);
+				sprintf(chkGeneralNodesChar, "%i", testCurve._nodesList[i].yPos);
+				outtext(chkGeneralNodesChar);
+			}
+			*/
+			
+			
+			
+			
+			//drawNode(mousex(), testCurve.tempNodePos(mousex()));
+			//yReturnVal = testCurve.getCurveVal(mousex());
+			//drawNode(mousex(), yReturnVal);
+			
 		}
 		
 		    //Get mouse status:
