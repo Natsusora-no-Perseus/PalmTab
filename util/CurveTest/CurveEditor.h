@@ -46,15 +46,24 @@ public:
 	void updateMidpoint();//Updates list of midpoints
 	void updateShift();//Updates list shifted midpoints (also control points for bezier curve)
 	void bezierList();//Places nodes in _resultNodes, for LUT use.
-
+	
+	
+	/* D E B U G G I N G   F U N C T I O N S: */
+	int chkShiftedSize();
+	int chkMidptSize();
+	int chkNodesSize();
+	int tempNodePos(uint8_t tempNodeNo);
+	
+	vector<NodePos> _nodesList;//Stores list of NodePos
+	vector<NodePos> _resultNodes;//Stores list of result NodePos
 
 
 private:
 	
-	vector<NodePos> _nodesList;//Stores list of NodePos
+	//vector<NodePos> _nodesList;//Stores list of NodePos
 	vector<NodePos> _midpointsList;//Stores list of midpoints
 	vector<NodePos> _shiftedPointsList;//Stores list of shifted midpoints
-	vector<NodePos> _resultNodes;//Stores list of result NodePos
+	//vector<NodePos> _resultNodes;//Stores list of result NodePos
 	
 	
 	
@@ -79,5 +88,3 @@ private:
 };
 
 #endif
-
-
