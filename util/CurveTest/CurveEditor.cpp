@@ -34,27 +34,22 @@ bool CurveEditor::setNode(uint8_t nodeXPos, uint8_t nodeYPos)
 		}
 	}
 	
-	if (nodeIndex != 0)
+	_nodesList.push_back(newNode);//Legal node, push back
+	nodeIndex += 1;
+	while (_nodesList[nodeIndex - 1].xPos > _nodesList[nodeIndex].xPos)
 	{
-		_nodesList.push_back(newNode);//Legal node, push back
-		nodeIndex += 1;
-		while (_nodesList[nodeIndex - 1].xPos > _nodesList[nodeIndex].xPos)
-		{
-			swap(_nodesList[nodeIndex - 1], _nodesList[nodeIndex]);//Rearrange nodesList by order of increasing xPos
-		}
-		return true;
+		swap(_nodesList[nodeIndex - 1], _nodesList[nodeIndex]);//Rearrange nodesList by order of increasing xPos
 	}
-	else
-	{
-		return false;
-	}
+	return true;
 }
 
 CurveEditor::NodePos CurveEditor::getMidpoint(uint8_t nodeIndex)
 {
 	NodePos midPoint;
-	midPoint.xPos = round((_nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos) / 2);
-	midPoint.yPos = round((_nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos) / 2);
+	
+	midPoint = _nodesList[nodeIndex];
+	midPoint.xPos += round((_nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos) / 2);
+	midPoint.yPos += round((_nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos) / 2);
 
 	return midPoint;
 }
@@ -68,11 +63,11 @@ void CurveEditor::updateMidpoint()
 	for (uint8_t i = 0; i < nodesCount - 1; i++)
 	{
 		newMidpoint = getMidpoint(i);
-		_midpointsList.push_back(newMidpoint);
+		_midpointsList[i] = getMidpoint(i);
 	}
 }
 
-uint8_t CurveEditor::getLength(uint8_t nodeIndex)
+uint8_t CurveEditor::getLength(uint8_t nodeIndex)//Find distance between this node and next node
 {
 	float tempFVal;
 	uint8_t tempVal;
@@ -129,7 +124,7 @@ void CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, an
 
 void CurveEditor::updateShift()
 {
-	_shiftedPointsList.resize(_midpointsList.size() * 2 + 1);
+	_shiftedPointsList.resize((_midpointsList.size() - 1) * 2);
 
 	for (int i = 0; i < _midpointsList.size() - 1; i++)
 	{
@@ -152,9 +147,12 @@ CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, floa
 	NodePos outputVal;
 	double tempVal;
 	tempVal = (point2.xPos - point1.xPos) * tValue + point1.xPos;
-	outputVal.xPos = round(tempVal);
+	//outputVal.xPos = round(tempVal);
+	outputVal.xPos = point1.xPos + 2;
+	
 	tempVal = (point2.yPos - point1.yPos) * tValue + point1.yPos;
-	outputVal.yPos = round(tempVal);
+	//outputVal.yPos = round(tempVal);
+	outputVal.yPos = 14;
 	
 	return outputVal;
 }
@@ -163,7 +161,7 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 {
 	vector<NodePos> recursiveNodes(_shiftedPointsList.size() - 1);
 	
-	
+	/*
 	for (uint8_t i = 0; i < (_shiftedPointsList.size() - 1); i++)//Sets recursiveNodes to 1st level of recursion
 	{
 		recursiveNodes.push_back(getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue));
@@ -183,19 +181,37 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
+	*/
+	
+	NodePos debugNode;// D E B U G
+	NodePos debugNode2;
+	int tempRevVal = tValue * bezierSubIntv;
+	debugNode2 = getTPoint(_shiftedPointsList[tempRevVal + 1], _shiftedPointsList[tempRevVal], tValue);
+	debugNode.xPos = 42;
+	debugNode.yPos = tempRevVal;
+	//debugNode.yPos = debugNode2.yPos;
+	//_resultNodes.push_back(debugNode);
 	
 	
-	return (recursiveNodes[0]);
+	return (debugNode);
 }
 
 void CurveEditor::bezierList()//Places nodes in _resultNodes.
 {
+	_resultNodes.resize(bezierSubIntv + 1);
 	float tValueNow;
 	for (uint8_t intvCount = 0; intvCount <= bezierSubIntv; intvCount++)
 	{
-		tValueNow = intvCount * (1 / bezierSubIntv);
+		//tValueNow = intvCount / bezierSubIntv;
+		tValueNow = intvCount / bezierSubIntv;
 		
-		_resultNodes.push_back(bezierRecursive(tValueNow));
+		//_resultNodes.push_back(bezierRecursive(tValueNow));
+		
+		NodePos debugNode;// D E B U G
+		
+		debugNode.xPos = intvCount;
+		debugNode.yPos = tValueNow * bezierSubIntv;
+		_resultNodes[intvCount] = debugNode;
 	}
 	_resultNodes.resize(bezierSubIntv + 1);
 }
