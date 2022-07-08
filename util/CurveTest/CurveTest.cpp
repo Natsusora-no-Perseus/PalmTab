@@ -24,7 +24,7 @@ const int WindowHeight = 600;
 const int BkColor = 0;//Background color, black
 const int LineColor = 15;//Line color, white
 const int NodeColor = 14;//Node color, yellow
-const int CurveColor = 2;//Curve points color, green
+const int CurveColor = LIGHTGREEN;//
 
 struct Point
 {
@@ -65,12 +65,30 @@ int main()
 	int yReturnVal = 42;
 	bool canDrawCurve = false;
 	
+	
 	testCurve.setNode(10, 10);
 	testCurve.setNode(30, 40);
 	testCurve.setNode(90, 120);
 	testCurve.setNode(120, 60);
 	testCurve.setNode(130, 40);
 	testCurve.setNode(160, 50);
+	
+	testCurve.setNode(180, 10);
+	testCurve.setNode(190, 100);
+	testCurve.setNode(210, 210);
+	
+	/*
+	testCurve.setNode(10, 42);
+	testCurve.setNode(30, 42);
+	testCurve.setNode(90, 84);
+	testCurve.setNode(120, 42);
+	testCurve.setNode(130, 42);
+	testCurve.setNode(160, 42);
+	
+	testCurve.setNode(180, 42);
+	testCurve.setNode(190, 42);
+	testCurve.setNode(210, 42);
+	*/
 	
 	while (!(ismouseclick(WM_LBUTTONDOWN) && ((mousex() >= 750) && (mousey() >= 575))))
     {
@@ -101,8 +119,8 @@ int main()
 			if (mousey() >= 100 && mousey() <= 140)
 			{	
 				testCurve.updateMidpoint();
-				//testCurve.updateShift();
-				//testCurve.bezierList();
+				testCurve.updateShift();
+				testCurve.bezierList();
 				canDrawCurve = true;
 			}
 		}
@@ -142,28 +160,38 @@ int main()
 		if (canDrawCurve == true)
 		{
 			drawNode(3, 580);//==Probe==
-			for (int i = 0; i <= 160; i += 5)
+			for (int i = 0; i <= 128; i += 1)
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
-				drawNode(i, yReturnVal);
-
+				yReturnVal = testCurve._resultNodes[i].yPos;
+				putpixel(i * 2 + 50, yReturnVal * 2 + 50, CurveColor);
+				
+				//yReturnVal = testCurve.getCurveVal(i);
+				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
+				
 			}
 			
-			/*
-			char chkShiftedChar[5];
-			sprintf(chkShiftedChar, "%i", testCurve.chkShiftedSize());
+			char chkNodesChar[5];
+			sprintf(chkNodesChar, "%i", testCurve.chkNodesSize());
 			moveto(100, 50);
-			outtext(chkShiftedChar);
+			outtext(chkNodesChar);
 				
 			char chkMidptChar[5];
 			sprintf(chkMidptChar, "%i", testCurve.chkMidptSize());
 			moveto(100, 70);
 			outtext(chkMidptChar);
-				
-			char chkNodesChar[5];
-			sprintf(chkNodesChar, "%i", testCurve.chkNodesSize());
+			
+			char chkShiftedChar[5];
+			sprintf(chkShiftedChar, "%i", testCurve.chkShiftedSize());
 			moveto(100, 90);
-			outtext(chkNodesChar);
+			outtext(chkShiftedChar);
+
+			char chkResultNodesChar[5];
+			sprintf(chkResultNodesChar, "%i", testCurve._resultNodes.size());
+			moveto(100, 110);
+			outtext(chkResultNodesChar);			
+			
+			
 			
 			moveto(200, 1);
 			
@@ -177,19 +205,19 @@ int main()
 			}
 			for (int i = 50; i < 100; i += 1)
 			{
-				moveto(625, (i-50) * 12);
+				moveto(605, (i - 50) * 12);
 				sprintf(chkResultChar, "%i", testCurve._resultNodes[i].yPos);
 				outtext(chkResultChar);
 			}
 			
 			char chkGeneralNodesChar[5];
-			for (int i = 0; i <= 5; i += 1)
+			for (int i = 0; i < 14; i += 1)
 			{
-				moveto(625, i * 20);
-				sprintf(chkGeneralNodesChar, "%i", testCurve._nodesList[i].yPos);
+				moveto(635, i * 15);
+				sprintf(chkGeneralNodesChar, "%i", testCurve._shiftedPointsList[i].yPos);
 				outtext(chkGeneralNodesChar);
 			}
-			*/
+			
 			
 			
 			
