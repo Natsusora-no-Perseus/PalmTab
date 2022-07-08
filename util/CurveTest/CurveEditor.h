@@ -33,7 +33,7 @@ public:
 	/* Mutator functions: */
 	bool setNode(uint8_t nodeXPos, uint8_t nodeYPos);//Returns false if node can't be set
 	void setScalingFactor(float scalingFactor);//Should be set between 0~1. Larger = "sharper" curve. Suggested value is 0.6.
-	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage.
+	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage. 
 	
 	/* Accessor functions: */
 	NodePos getNode(uint8_t nodeIndex);//Returns nodeIndex'th user defined node.
@@ -55,14 +55,16 @@ public:
 	int tempNodePos(uint8_t tempNodeNo);
 	
 	vector<NodePos> _nodesList;//Stores list of NodePos
+	vector<NodePos> _midpointsList;//Stores list of midpoints
+	vector<NodePos> _shiftedPointsList;//Stores list of shifted midpoints
 	vector<NodePos> _resultNodes;//Stores list of result NodePos
 
 
 private:
 	
 	//vector<NodePos> _nodesList;//Stores list of NodePos
-	vector<NodePos> _midpointsList;//Stores list of midpoints
-	vector<NodePos> _shiftedPointsList;//Stores list of shifted midpoints
+	//vector<NodePos> _midpointsList;//Stores list of midpoints
+	//vector<NodePos> _shiftedPointsList;//Stores list of shifted midpoints
 	//vector<NodePos> _resultNodes;//Stores list of result NodePos
 	
 	
