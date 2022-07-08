@@ -75,8 +75,7 @@ uint8_t CurveEditor::getLength(uint8_t nodeIndex)//Find distance between this no
 	xLen = abs(xLen);
 	uint8_t yLen = _nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos;
 	yLen = abs(yLen);
-	tempFVal = sqrt(xLen * xLen + yLen * yLen);
-	tempVal = round(tempFVal);
+	tempVal = round(sqrt(xLen * xLen + yLen * yLen));
 	return (tempVal);
 }
 
@@ -146,13 +145,11 @@ CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, floa
 {
 	NodePos outputVal;
 	double tempVal;
-	tempVal = (point2.xPos - point1.xPos) * tValue + point1.xPos;
-	//outputVal.xPos = round(tempVal);
-	outputVal.xPos = point1.xPos + 2;
+	tempVal = (point2.xPos - point1.xPos) * (float)tValue + point1.xPos;
+	outputVal.xPos = round(tempVal);
 	
-	tempVal = (point2.yPos - point1.yPos) * tValue + point1.yPos;
-	//outputVal.yPos = round(tempVal);
-	outputVal.yPos = 14;
+	tempVal = (point2.yPos - point1.yPos) * (float)tValue + point1.yPos;
+	outputVal.yPos = round(tempVal);
 	
 	return outputVal;
 }
@@ -161,28 +158,26 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 {
 	vector<NodePos> recursiveNodes(_shiftedPointsList.size() - 1);
 	
-	/*
-	for (uint8_t i = 0; i < (_shiftedPointsList.size() - 1); i++)//Sets recursiveNodes to 1st level of recursion
+	uint8_t recursionDepth = _shiftedPointsList.size() - 1;//The required levels of calculation
+	
+	for (uint8_t i = 0; i < recursionDepth; i++)//Sets recursiveNodes to 1st level of recursion
 	{
-		recursiveNodes.push_back(getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue));
+		recursiveNodes[i] = getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue);
 	}
 	
-	
-	
-	uint8_t recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
-	
+	recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
 	
 	for (uint8_t n = 0; n < recursionDepth; n++)
 	{
-		for (uint8_t m = 0; m < recursionDepth - n; n++)
+		for (uint8_t m = 0; m < recursionDepth - n; m++)
 		{
 			recursiveNodes[m] = getTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
 		}
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
-	*/
 	
+	/*
 	NodePos debugNode;// D E B U G
 	NodePos debugNode2;
 	int tempRevVal = tValue * bezierSubIntv;
@@ -191,29 +186,31 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 	debugNode.yPos = tempRevVal;
 	//debugNode.yPos = debugNode2.yPos;
 	//_resultNodes.push_back(debugNode);
+	*/
 	
 	
-	return (debugNode);
+	return (recursiveNodes[0]);
 }
 
 void CurveEditor::bezierList()//Places nodes in _resultNodes.
 {
 	_resultNodes.resize(bezierSubIntv + 1);
-	float tValueNow;
+	float tValueNow = 0.00;
 	for (uint8_t intvCount = 0; intvCount <= bezierSubIntv; intvCount++)
 	{
-		//tValueNow = intvCount / bezierSubIntv;
-		tValueNow = intvCount / bezierSubIntv;
+		tValueNow = (float)intvCount / (float)bezierSubIntv;
 		
 		//_resultNodes.push_back(bezierRecursive(tValueNow));
+		_resultNodes[intvCount] = bezierRecursive(tValueNow);
 		
+		/*
 		NodePos debugNode;// D E B U G
-		
 		debugNode.xPos = intvCount;
 		debugNode.yPos = tValueNow * bezierSubIntv;
 		_resultNodes[intvCount] = debugNode;
+		*/
 	}
-	_resultNodes.resize(bezierSubIntv + 1);
+	//_resultNodes.resize(bezierSubIntv + 1);
 }
 
 void CurveEditor::updateAll()//Update everything in sequence to generate a new LUT; call after setNode().
