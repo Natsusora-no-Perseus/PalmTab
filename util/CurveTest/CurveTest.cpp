@@ -21,10 +21,14 @@ using namespace std;
 const int WindowWidth = 800;
 const int WindowHeight = 600;
 
-const int BkColor = 0;//Background color, black
-const int LineColor = 15;//Line color, white
-const int NodeColor = 14;//Node color, yellow
-const int CurveColor = LIGHTGREEN;//
+const int BKCOLOR = BLACK;//Background color, black
+const int LINECOLOR = WHITE;//Line color, white
+const int NODECOLOR = YELLOW;//Node color, yellow
+const int CURVECOLOR = LIGHTGREEN;//Curve points color
+const int RETICLE_COLOR = LIGHTGRAY;//Reticle color
+const int CROSSCOLOR = LIGHTCYAN;
+
+bool isInCurveBox = false;//If cursor is in curve box
 
 struct Point
 {
@@ -34,11 +38,19 @@ struct Point
 
 void drawNode(int xCood, int yCood)//Draw a circle with reticle lines
 {
-	setcolor(NodeColor);//Set color to yellow
+	setcolor(NODECOLOR);//Set color to yellow
 	circle(xCood, yCood, 5);
 	line(xCood + 4, yCood, xCood - 4, yCood);
 	line(xCood, yCood + 4, xCood, yCood - 4);
-	setcolor(LineColor);//Reset color to default
+	setcolor(LINECOLOR);//Reset color to default
+}
+
+void drawCross(int xCood, int yCood)
+{
+	setcolor(CROSSCOLOR);//Set color to yellow
+	line(xCood + 7, yCood + 7, xCood - 7, yCood - 7);
+	line(xCood + 7, yCood - 7, xCood - 7, yCood + 7);
+	setcolor(LINECOLOR);//Reset color to default
 }
 
 void drawReticle(int xCood, int yCood, int color)
@@ -46,7 +58,16 @@ void drawReticle(int xCood, int yCood, int color)
 	setcolor(color);
 	line(xCood, 1, xCood, WindowHeight);
 	line(1, yCood, WindowWidth, yCood);
-	setcolor(LineColor);
+	setcolor(LINECOLOR);
+}
+
+Point convertNodePos(CurveEditor::NodePos inputNodePos)//Converts curve coordinates to display coordinates
+{
+	Point outputNodePos;
+	outputNodePos.xCood = 50 + inputNodePos.xPos * 2;
+	outputNodePos.yCood = 560 - inputNodePos.yPos * 2;	
+	
+	return (outputNodePos);
 }
 
 int main()
@@ -54,108 +75,232 @@ int main()
         
 	//Init window:
 	initwindow(WindowWidth, WindowHeight);
-	setbkcolor(BkColor);
+	setbkcolor(BKCOLOR);
 	cleardevice();
-	setcolor(LineColor);
+	setcolor(LINECOLOR);
 	
 	CurveEditor testCurve;
 	testCurve.setScalingFactor(0.6);
 	testCurve.setBezierSubIntv(128);
 	
-	int yReturnVal = 42;
+	int yReturnVal = 0;
 	bool canDrawCurve = false;
 	
+	uint8_t nodeSelectSta = 0;//0 = Not active; 1 = Selecting; 2 = Creating new node
+	uint8_t selectedNode = 0;//Selected node
 	
-	testCurve.setNode(10, 10);
 	testCurve.setNode(30, 40);
 	testCurve.setNode(90, 120);
 	testCurve.setNode(120, 60);
 	testCurve.setNode(130, 40);
 	testCurve.setNode(160, 50);
-	
+	testCurve.setNode(10, 10);
+	testCurve.setNode(210, 210);
 	testCurve.setNode(180, 10);
 	testCurve.setNode(190, 100);
-	testCurve.setNode(210, 210);
 	
-	/*
-	testCurve.setNode(10, 42);
-	testCurve.setNode(30, 42);
-	testCurve.setNode(90, 84);
-	testCurve.setNode(120, 42);
-	testCurve.setNode(130, 42);
-	testCurve.setNode(160, 42);
 	
-	testCurve.setNode(180, 42);
-	testCurve.setNode(190, 42);
-	testCurve.setNode(210, 42);
-	*/
 	
 	while (!(ismouseclick(WM_LBUTTONDOWN) && ((mousex() >= 750) && (mousey() >= 575))))
     {
+    	//# Curve Box:
+    	rectangle(50, 50, 562, 562);
         //# Menu Bar:
         line(690, 1, 690, 600);
+        
     	//## Display cursor position:
+    	//### Screen cursor position
     	char xPosStr[5];
 		char yPosStr[5];
     	sprintf(yPosStr, "%03i", mousey());   
 		sprintf(xPosStr, "%03i", mousex());
-		moveto(702, 1);
+		moveto(700, 1);
 		outtext("===Mouse===");
-		moveto(700, 20);
-		outtext("==[x]== ==[y]==");
-		moveto(712, 40);
+		moveto(702, 20);
+		outtext("=[x]=     =[y]=");
+		moveto(707, 40);
 		outtext(xPosStr);
-		moveto(763, 40);
+		moveto(758, 40);
 		outtext(yPosStr);
-		drawReticle(mousex(), mousey(), 7);
-		//## Draw 'Update Nodes' button
+		//### Converted cursor position
+		char xConvtdStr[5];//Converted position
+		char yConvtdStr[5];
+		sprintf(xConvtdStr, "%03i", (mousex() - 50) / 2);
+		sprintf(yConvtdStr, "%03i", (560 - mousey()) / 2);
+		moveto(700, 60);
+		outtext("=[x*]=   =[y*]=");
+		moveto(707, 80);
+		outtext(xConvtdStr);
+		moveto(758, 80);
+		outtext(yConvtdStr);
+		
+		//## Draw "Update Nodes" button
 		rectangle(690, 100, 800, 140);
-		moveto(700, 110);
+		moveto(700, 112);
 		outtext("Update Nodes");
 		
+		//## Draw "Select Node" button
+		rectangle(690, 140, 800, 180);
+		moveto(707, 152);
+		outtext("Select Node");
+		//### Draw selection arrow keys
+		rectangle(690, 180, 800, 200);
+		moveto(713, 182);
+		outtext("<             >");
+		line(745, 180, 745, 200);
+		//### Draw "New Node" button
+		line(690, 240, 800, 240);
+		moveto(714, 212);
+		outtext("New Node");
+		//### Draw "Delete Node" button
+		line(690, 280, 800, 280);
+		moveto(707, 252);
+		outtext("Delete Node");
+		
+		//## Draw "EXIT" button
+		rectangle(750, 575, 800, 600);
+		moveto(760, 580);
+		outtext("EXIT");
+		
 		//## Menu bar actions:
-		if (ismouseclick(WM_LBUTTONDOWN) && mousex() >= 690)
+		if (ismouseclick(WM_LBUTTONDOWN) && mousex() >= 690)//Mouse left button pressed
 		{
-			if (mousey() >= 100 && mousey() <= 140)
+			//### "Update Nodes"
+			if (mousey() > 100 && mousey() < 140)
 			{	
 				testCurve.updateMidpoint();
 				testCurve.updateShift();
 				testCurve.bezierList();
 				canDrawCurve = true;
 			}
+			//### "Select Nodes"
+			if (mousey() > 140 && mousey() < 180)
+			{
+				nodeSelectSta = 1;
+			}
+			//### Node selection arrow keys
+			if ((mousey() > 180 && mousey() < 200) && (nodeSelectSta == 1 || nodeSelectSta == 3))
+			{
+				if (mousex() < 745)//"<" button
+				{
+					if (selectedNode == 0)
+					{
+						selectedNode = testCurve._nodesList.size() - 1;//Select last node
+					}
+					else
+					{
+						selectedNode -= 1;
+					}
+				}
+				else//">" button
+				{
+					if (selectedNode == testCurve._nodesList.size() - 1)
+					{
+						selectedNode = 0;
+					}
+					else
+					{
+						selectedNode += 1;
+					}
+				}
+			}
+			//### "New Node"
+			if (mousey() > 200 && mousey() < 240)
+			{
+				nodeSelectSta = 2;
+			}
+			//### "Delete Node"
+			if (mousey() > 240 && mousey() < 280)
+			{
+				nodeSelectSta = 3;
+				for (int i = selectedNode; i < testCurve._nodesList.size() - 1; i++)
+				{
+					testCurve._nodesList[i] = testCurve._nodesList[i + 1];
+				}
+				testCurve._nodesList.resize(testCurve._nodesList.size() - 1);
+				nodeSelectSta = 0;
+			}
+		}
+		
+		//# Draw Nodes:
+		//## Highlight selected node
+		if (nodeSelectSta == 1)
+		{
+			moveto(convertNodePos(testCurve._nodesList[selectedNode]).xCood-14, convertNodePos(testCurve._nodesList[selectedNode]).yCood-9);
+			setcolor(LIGHTRED);
+			outtext(">   <");
+			setcolor(LINECOLOR);
+		}
+		//## Draw all nodes
+		for (int i = 0; i < testCurve._nodesList.size(); i++)
+		{
+			drawNode(convertNodePos(testCurve._nodesList[i]).xCood, convertNodePos(testCurve._nodesList[i]).yCood);
+		}
+		// Draw all shifted nodes
+		for (int i = 0; i < testCurve._shiftedPointsList.size(); i++)
+		{
+			drawCross(convertNodePos(testCurve._shiftedPointsList[i]).xCood, convertNodePos(testCurve._shiftedPointsList[i]).yCood);
+		}
+		
+		
+		//# Draw reticle:
+		//## Read mouse zone:
+		if ((mousex() > 50 && mousey() > 50) && (mousex() < 562 && mousey() < 562))
+		{
+			isInCurveBox = true;
+		}
+		else
+		{
+			isInCurveBox = false;
+		}
+		//## Display reticle
+		if (nodeSelectSta == 0)
+		{
+			drawReticle(mousex(), mousey(), WHITE);
+		}
+		else if (isInCurveBox == true)
+		{
+			if (nodeSelectSta == 1)//Change node
+			{
+				drawReticle(mousex(), mousey(), LIGHTCYAN);
+			}
+			else if (nodeSelectSta == 2)//Create node
+			{
+				drawReticle(mousex(), mousey(), LIGHTGREEN);
+			}
+		}
+		else
+		{
+			drawReticle(mousex(), mousey(), LIGHTRED);
+		}
+		//# Node changing actions:
+		if (ismouseclick(WM_LBUTTONDOWN) && isInCurveBox == true)
+		{
+			if (nodeSelectSta == 1)//Change a node
+			{
+				for (int i = selectedNode; i < testCurve._nodesList.size() - 1; i++)
+				{
+					testCurve._nodesList[i] = testCurve._nodesList[i + 1];
+				}
+				testCurve._nodesList.resize(testCurve._nodesList.size() - 1);
+				testCurve.setNode((mousex() - 50) / 2, (560 - mousey()) / 2);
+				nodeSelectSta = 0;
+			}
+			else if (nodeSelectSta == 2)//Create a node
+			{
+				testCurve.setNode((mousex() - 50) / 2, (560 - mousey()) / 2);
+				nodeSelectSta = 0;
+			}
+		}
+		else if ((ismouseclick(WM_LBUTTONDOWN) && isInCurveBox == false) && mousex() < 690)//Cancel selection
+		{
+			nodeSelectSta = 0;
 		}
 		
 		
 		
-		//Draw the exit button:
-		rectangle(750, 575, 800, 600);
-		moveto(760, 580);
-		outtext("EXIT");
 		
-		//*Test Section:*
-		line(1, 1, 90, 90);
-		drawNode(90, 90);
-		
-		//*Test Curve:*
-		//Note: Conversion method: n * 2 + 50.
-		/*
-		testCurve.setNode(10, 10);
-		testCurve.setNode(30, 40);
-		testCurve.setNode(90, 120);
-		testCurve.setNode(120, 60);
-		testCurve.setNode(130, 40);
-		testCurve.setNode(160, 50);
-		*/
-
-		
-		drawNode(70, 70);
-		drawNode(110, 130);
-		drawNode(230, 290);
-		drawNode(290, 170);
-		drawNode(310, 130);
-		drawNode(370, 150);
-		rectangle(50, 50, 562, 562);
-		
+				
 		//Draw the curve:
 		if (canDrawCurve == true)
 		{
@@ -164,13 +309,14 @@ int main()
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
 				yReturnVal = testCurve._resultNodes[i].yPos;
-				putpixel(i * 2 + 50, yReturnVal * 2 + 50, CurveColor);
+				putpixel(i * 2 + 50, 560 - yReturnVal * 2, CURVECOLOR);
 				
 				//yReturnVal = testCurve.getCurveVal(i);
 				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
 				
 			}
 			
+			/*
 			char chkNodesChar[5];
 			sprintf(chkNodesChar, "%i", testCurve.chkNodesSize());
 			moveto(100, 50);
@@ -217,7 +363,7 @@ int main()
 				sprintf(chkGeneralNodesChar, "%i", testCurve._shiftedPointsList[i].yPos);
 				outtext(chkGeneralNodesChar);
 			}
-			
+			*/
 			
 			
 			
