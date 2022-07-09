@@ -44,8 +44,9 @@ public:
 	//Process for setting up a curve: setNode => updateMidpoint => updateShift => bezierList
 	void updateAll();//Updates everything and generates a new list of output nodes
 	void updateMidpoint();//Updates list of midpoints
-	void updateShift();//Updates list shifted midpoints (also control points for bezier curve)
+	void updateShift();//Updates list shifted midpoints (a.k.a. control points for bezier curve)
 	void bezierList();//Places nodes in _resultNodes, for LUT use.
+	void swapNodes(NodePos *firstNode);//Swap two nodes
 	
 	
 	/* D E B U G G I N G   F U N C T I O N S: */
