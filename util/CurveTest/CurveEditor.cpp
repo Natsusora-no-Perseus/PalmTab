@@ -49,8 +49,8 @@ CurveEditor::NodePos CurveEditor::getMidpoint(uint8_t nodeIndex)
 	NodePos midPoint;
 	
 	midPoint = _nodesList[nodeIndex];
-	midPoint.xPos += round((_nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos) / 2);
-	midPoint.yPos += round((_nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos) / 2);
+	midPoint.xPos = round((_nodesList[nodeIndex + 1].xPos + _nodesList[nodeIndex].xPos) / 2);
+	midPoint.yPos = round((_nodesList[nodeIndex + 1].yPos + _nodesList[nodeIndex].yPos) / 2);
 
 	return midPoint;
 }
@@ -72,9 +72,7 @@ uint8_t CurveEditor::getLength(uint8_t nodeIndex)//Find distance between this no
 {
 	float tempVal;
 	float xLen = _nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos;
-	xLen = abs(xLen);
 	float yLen = _nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos;
-	yLen = abs(yLen);
 	tempVal = round(sqrt((float)xLen * (float)xLen + (float)yLen * (float)yLen));
 	return (tempVal);
 	//QUESTIONABLE
@@ -92,32 +90,26 @@ void CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, an
 	}
 	else
 	{
-		distProportion = getLength(nodeIndex) / getLength(nodeIndex + 1);//Proportion of distance between this and next node
+		distProportion = (float)getLength(nodeIndex) / ((float)getLength(nodeIndex) + (float)getLength(nodeIndex + 1));
+		//Proportion of distance between this and next node
 	}
 
 	NodePos biPoint;//The B_i point on line segment between two midpoints
 	biPoint = _midpointsList[nodeIndex];
-	biPoint.xPos += round(((float)_midpointsList[nodeIndex + 1].xPos - (float)_midpointsList[nodeIndex].xPos) * (float)distProportion);
-	biPoint.yPos += round(((float)_midpointsList[nodeIndex + 1].yPos - (float)_midpointsList[nodeIndex].yPos) * (float)distProportion);//ok
+	biPoint.xPos += round((_midpointsList[nodeIndex + 1].xPos - _midpointsList[nodeIndex].xPos) * (float)distProportion);
+	biPoint.yPos += round((_midpointsList[nodeIndex + 1].yPos - _midpointsList[nodeIndex].yPos) * (float)distProportion);
 
-	NodePos shiftedPoint1, shiftedPoint2;
-
-	shiftedPoint1.xPos = _nodesList[nodeIndex + 1].xPos - biPoint.xPos;
-	shiftedPoint1.yPos = _nodesList[nodeIndex + 1].yPos - biPoint.yPos;//Shifting distance of midpoints (B_i to next node)
-	shiftedPoint2 = shiftedPoint1;//ok
-
-	shiftedPoint1.xPos += _midpointsList[nodeIndex].xPos;
-	shiftedPoint1.yPos += _midpointsList[nodeIndex].yPos;
-	shiftedPoint2.xPos += _midpointsList[nodeIndex + 1].xPos;
-	shiftedPoint2.yPos += _midpointsList[nodeIndex + 1].yPos;//Shifts without scaling
-	//ok
-
-	shiftedPoint1.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * (1.000 - (float)_scalingFactor));
-	shiftedPoint1.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * (1.000 - (float)_scalingFactor));
-
-	shiftedPoint2.xPos += round((biPoint.xPos - _midpointsList[nodeIndex + 1].xPos) * (1.000 - (float)_scalingFactor));
-	shiftedPoint2.yPos += round((biPoint.yPos - _midpointsList[nodeIndex + 1].yPos) * (1.000 - (float)_scalingFactor));
-
+	NodePos shiftedPoint1, shiftedPoint2;//Two control points
+	
+	shiftedPoint1 = _nodesList[nodeIndex + 1];
+	shiftedPoint2 = shiftedPoint1;
+	
+	shiftedPoint1.xPos += round((_midpointsList[nodeIndex].xPos - biPoint.xPos) * (float)_scalingFactor);
+	shiftedPoint1.yPos += round((_midpointsList[nodeIndex].yPos - biPoint.yPos) * (float)_scalingFactor);
+	
+	shiftedPoint2.xPos += round((_midpointsList[nodeIndex + 1].xPos - biPoint.xPos) * (float)_scalingFactor);
+	shiftedPoint2.yPos += round((_midpointsList[nodeIndex + 1].yPos - biPoint.yPos) * (float)_scalingFactor);
+	
 	_shiftedPointsList[2 * nodeIndex] = shiftedPoint1;
 	_shiftedPointsList[2 * nodeIndex + 1] = shiftedPoint2;
 
