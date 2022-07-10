@@ -138,12 +138,18 @@ void CurveEditor::setBezierSubIntv(uint8_t inputSubIntv)
 CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, float tValue)//Gets point at (tValue)th of the line segment
 {
 	NodePos outputVal;
-	double tempVal;
-	tempVal = (point2.xPos - point1.xPos) * (float)tValue + point1.xPos;
+	float tempVal;
+	tempVal = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
+	//tempVal = (point2.xPos - point1.xPos) * 0.600 + point1.xPos;
 	outputVal.xPos = round(tempVal);
+	//outputVal.xPos = (point1.xPos + point2.xPos) * 0.5;
+	//outputVal.xPos = 42;
 	
-	tempVal = (point2.yPos - point1.yPos) * (float)tValue + point1.yPos;
+	tempVal = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
+	//tempVal = (point2.yPos - point1.yPos) * 0.600 + point1.yPos;
 	outputVal.yPos = round(tempVal);
+	//outputVal.yPos = (point1.yPos + point2.yPos) * 0.5;
+	//outputVal.yPos = 42;
 	
 	return outputVal;
 }
@@ -157,19 +163,20 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 	for (uint8_t i = 0; i < recursionDepth; i++)//Sets recursiveNodes to 1st level of recursion
 	{
 		recursiveNodes[i] = getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue);
-	}
+	}//ok
 	
-	recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
+	recursionDepth = recursiveNodes.size();//The required levels of calculation
 	
-	for (uint8_t n = 0; n < recursionDepth; n++)
+	for (uint8_t n = 0; n < recursionDepth - 1; n++)//ok
 	{
-		for (uint8_t m = 0; m < recursionDepth - n; m++)
+		for (uint8_t m = 0; m < recursionDepth - n - 1; m++)
 		{
 			recursiveNodes[m] = getTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
 		}
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
+	
 	
 	/*
 	NodePos debugNode;// D E B U G
@@ -196,6 +203,7 @@ void CurveEditor::bezierList()//Places nodes in _resultNodes.
 		
 		//_resultNodes.push_back(bezierRecursive(tValueNow));
 		_resultNodes[intvCount] = bezierRecursive(tValueNow);
+		//_resultNodes[intvCount] = getTPoint(_shiftedPointsList[intvCount], _shiftedPointsList[intvCount + 1], 0.550);
 		
 		/*
 		NodePos debugNode;// D E B U G

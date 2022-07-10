@@ -80,7 +80,7 @@ int main()
 	setcolor(LINECOLOR);
 	
 	CurveEditor testCurve;
-	testCurve.setScalingFactor(0.6);
+	testCurve.setScalingFactor(0.500);
 	testCurve.setBezierSubIntv(128);
 	
 	int yReturnVal = 0;
@@ -309,7 +309,7 @@ int main()
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
 				yReturnVal = testCurve._resultNodes[i].yPos;
-				putpixel(i * 2 + 50, 560 - yReturnVal * 2, CURVECOLOR);
+				putpixel(testCurve._resultNodes[i].xPos * 2 + 50, 560 - yReturnVal * 2, CURVECOLOR);
 				
 				//yReturnVal = testCurve.getCurveVal(i);
 				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
@@ -386,6 +386,6 @@ int main()
 		cleardevice();
     }
 	
-	delay(500);
+	delay(200);
 	return(0);
 }
