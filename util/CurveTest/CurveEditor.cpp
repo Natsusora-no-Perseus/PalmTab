@@ -140,16 +140,10 @@ CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, floa
 	NodePos outputVal;
 	float tempVal;
 	tempVal = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
-	//tempVal = (point2.xPos - point1.xPos) * 0.600 + point1.xPos;
 	outputVal.xPos = round(tempVal);
-	//outputVal.xPos = (point1.xPos + point2.xPos) * 0.5;
-	//outputVal.xPos = 42;
 	
 	tempVal = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
-	//tempVal = (point2.yPos - point1.yPos) * 0.600 + point1.yPos;
 	outputVal.yPos = round(tempVal);
-	//outputVal.yPos = (point1.yPos + point2.yPos) * 0.5;
-	//outputVal.yPos = 42;
 	
 	return outputVal;
 }
@@ -212,7 +206,7 @@ void CurveEditor::bezierList()//Places nodes in _resultNodes.
 		_resultNodes[intvCount] = debugNode;
 		*/
 	}
-	//_resultNodes.resize(bezierSubIntv + 1);
+	_resultNodes.resize(bezierSubIntv + 1);
 }
 
 void CurveEditor::updateAll()//Update everything in sequence to generate a new LUT; call after setNode().
@@ -233,25 +227,29 @@ uint8_t CurveEditor::getCurveVal(uint8_t curveXPos)//Returns the Y coordinate co
 {
 	uint8_t resultListSize = _resultNodes.size();
 	
-	if (_resultNodes[resultListSize].xPos <= curveXPos)//Requested X coordinate larger than all resultNodes.
+	if (_resultNodes[resultListSize - 1].xPos <= curveXPos)//Requested X coordinate larger than all resultNodes.
 	{
-		return _resultNodes[resultListSize].yPos;//Returns Y coordinate of last resultNode.
+		return (_resultNodes[resultListSize - 1].yPos);//Returns Y coordinate of last resultNode.
 	}
 	else if (_resultNodes[0].xPos >= curveXPos)//Requested X coordinate smaller than all resultNodes.
 	{
-		return _resultNodes[0].yPos;//Returns Y coordinate of first resultNode.
+		return (_resultNodes[0].yPos);//Returns Y coordinate of first resultNode.
 	}
 	
 	//Index of the resultNode currently been read. Initialized to roughly get closer to the desired resultNodes:
 	uint8_t readIndex = resultListSize * (curveXPos / (_resultNodes[resultListSize].xPos - _resultNodes[0].xPos));
 	
+	float locationRatio;//The desired node's position on the line between two nodes
+	
 	if (_resultNodes[readIndex].xPos <= curveXPos)//Determine the iteration direction of readIndex.
 	{
 		while (_resultNodes[readIndex + 1].xPos <= curveXPos)//Iterate to the right.
 		{
-			readIndex++;
+			readIndex++;//Set readIndex to lower bound.
 		}
-		return (((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos)) * (curveXPos - _resultNodes[readIndex].xPos) + _resultNodes[readIndex].yPos);
+		
+		locationRatio = (curveXPos - _resultNodes[readIndex].xPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos);
+		return ((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) * (float)locationRatio + _resultNodes[readIndex].yPos);
 	}
 	else
 	{
@@ -260,11 +258,12 @@ uint8_t CurveEditor::getCurveVal(uint8_t curveXPos)//Returns the Y coordinate co
 			readIndex--;
 		}
 		readIndex--;//Set readIndex to lower bound.
-		return (((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos)) * (curveXPos - _resultNodes[readIndex].xPos) + _resultNodes[readIndex].yPos);
+		locationRatio = (curveXPos - _resultNodes[readIndex].xPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos);
+		return ((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) * (float)locationRatio + _resultNodes[readIndex].yPos);
 	}
 }
 
-void CurveEditor::swapNodes(NodePos *firstNode)
+void CurveEditor::swapNodes(NodePos *firstNode)//Swap two nodes.
 {
   NodePos tempNode = *(firstNode + 1);//Stores 2nd value
   *(firstNode + 1) = *firstNode;
