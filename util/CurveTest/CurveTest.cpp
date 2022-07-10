@@ -18,8 +18,8 @@
 
 using namespace std;
 
-const int WindowWidth = 800;
-const int WindowHeight = 600;
+const int WINDOWWIDTH = 800;
+const int WINDOWHEIGHT = 600;
 
 const int BKCOLOR = BLACK;//Background color, black
 const int LINECOLOR = WHITE;//Line color, white
@@ -56,8 +56,8 @@ void drawCross(int xCood, int yCood)
 void drawReticle(int xCood, int yCood, int color)
 {
 	setcolor(color);
-	line(xCood, 1, xCood, WindowHeight);
-	line(1, yCood, WindowWidth, yCood);
+	line(xCood, 1, xCood, WINDOWHEIGHT);
+	line(1, yCood, WINDOWWIDTH, yCood);
 	setcolor(LINECOLOR);
 }
 
@@ -74,7 +74,7 @@ int main()
 {
         
 	//Init window:
-	initwindow(WindowWidth, WindowHeight);
+	initwindow(WINDOWWIDTH, WINDOWHEIGHT, "Curve Tester");
 	setbkcolor(BKCOLOR);
 	cleardevice();
 	setcolor(LINECOLOR);
@@ -83,6 +83,7 @@ int main()
 	testCurve.setScalingFactor(0.500);
 	testCurve.setBezierSubIntv(128);
 	
+	int resultNodeValue = 0;
 	int yReturnVal = 0;
 	bool canDrawCurve = false;
 	
@@ -305,15 +306,21 @@ int main()
 		if (canDrawCurve == true)
 		{
 			drawNode(3, 580);//==Probe==
-			for (int i = 0; i <= 128; i += 1)
+			for (int i = 0; i <= 128; i ++)
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
-				yReturnVal = testCurve._resultNodes[i].yPos;
-				putpixel(testCurve._resultNodes[i].xPos * 2 + 50, 560 - yReturnVal * 2, CURVECOLOR);
+				resultNodeValue = testCurve._resultNodes[i].yPos;
+				putpixel(testCurve._resultNodes[i].xPos * 2 + 50, 560 - resultNodeValue * 2, CURVECOLOR);
 				
 				//yReturnVal = testCurve.getCurveVal(i);
 				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
 				
+			}
+			
+			for (int i = 50; i <= 562; i ++)
+			{
+				yReturnVal = testCurve.getCurveVal((i - 50) / 2);
+				putpixel(i, 560 - yReturnVal * 2, LIGHTBLUE);
 			}
 			
 			/*
