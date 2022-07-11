@@ -135,22 +135,31 @@ void CurveEditor::setBezierSubIntv(uint8_t inputSubIntv)
 	bezierSubIntv = inputSubIntv;
 }
 
-CurveEditor::NodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, float tValue)//Gets point at (tValue)th of the line segment
+CurveEditor::FNodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, float tValue)//Gets point at (tValue)th of the line segment
 {
-	NodePos outputVal;
-	float tempVal;
-	tempVal = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
-	outputVal.xPos = round(tempVal);
+	FNodePos outputVal;
 	
-	tempVal = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
-	outputVal.yPos = round(tempVal);
+	outputVal.xPos = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
+	
+	outputVal.yPos = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
+	
+	return outputVal;
+}
+
+CurveEditor::FNodePos CurveEditor::getFTPoint(FNodePos point1, FNodePos point2, float tValue)//Gets point at (tValue)th of the line segment
+{
+	FNodePos outputVal;
+	
+	outputVal.xPos = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
+	
+	outputVal.yPos = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
 	
 	return outputVal;
 }
 
 CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point on bezier curve at tValue.
 {
-	vector<NodePos> recursiveNodes(_shiftedPointsList.size() - 1);
+	vector<FNodePos> recursiveNodes(_shiftedPointsList.size() - 1);
 	
 	uint8_t recursionDepth = _shiftedPointsList.size() - 1;//The required levels of calculation
 	
@@ -165,26 +174,16 @@ CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point 
 	{
 		for (uint8_t m = 0; m < recursionDepth - n - 1; m++)
 		{
-			recursiveNodes[m] = getTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
+			recursiveNodes[m] = getFTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
 		}
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
 	
-	
-	/*
-	NodePos debugNode;// D E B U G
-	NodePos debugNode2;
-	int tempRevVal = tValue * bezierSubIntv;
-	debugNode2 = getTPoint(_shiftedPointsList[tempRevVal + 1], _shiftedPointsList[tempRevVal], tValue);
-	debugNode.xPos = 42;
-	debugNode.yPos = tempRevVal;
-	//debugNode.yPos = debugNode2.yPos;
-	//_resultNodes.push_back(debugNode);
-	*/
-	
-	
-	return (recursiveNodes[0]);
+	NodePos outputNode;
+	outputNode.xPos = round(recursiveNodes[0].xPos);
+	outputNode.yPos = round(recursiveNodes[0].yPos);
+	return (outputNode);
 }
 
 void CurveEditor::bezierList()//Places nodes in _resultNodes.
@@ -271,7 +270,7 @@ void CurveEditor::swapNodes(NodePos *firstNode)//Swap two nodes.
 }
 
 
-
+//Debug functions:
 int CurveEditor::chkShiftedSize()
 {
 	return (_shiftedPointsList.size());
