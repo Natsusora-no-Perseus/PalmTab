@@ -102,8 +102,14 @@ void CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, an
 	NodePos shiftedPoint1, shiftedPoint2;//Two control points
 	
 	shiftedPoint1 = _nodesList[nodeIndex + 1];
+	
+	//Shifts per order scaling factor:
+	shiftedPoint1.xPos += round((_nodesList[nodeIndex + 1].xPos - biPoint.xPos) * (_nodesList.size() * (float)_orderScalingFactor));
+	shiftedPoint1.yPos += round((_nodesList[nodeIndex + 1].yPos - biPoint.yPos) * (_nodesList.size() * (float)_orderScalingFactor));
+	
 	shiftedPoint2 = shiftedPoint1;
 	
+	//Shifts per distance to B_i point
 	shiftedPoint1.xPos += round((_midpointsList[nodeIndex].xPos - biPoint.xPos) * (float)_scalingFactor);
 	shiftedPoint1.yPos += round((_midpointsList[nodeIndex].yPos - biPoint.yPos) * (float)_scalingFactor);
 	
@@ -133,6 +139,11 @@ void CurveEditor::setScalingFactor(float scalingFactor)
 void CurveEditor::setBezierSubIntv(uint8_t inputSubIntv)
 {
 	bezierSubIntv = inputSubIntv;
+}
+
+void CurveEditor::setOrderScalingFactor(float scalingFactor)
+{
+	_orderScalingFactor = scalingFactor;
 }
 
 CurveEditor::FNodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, float tValue)//Gets point at (tValue)th of the line segment

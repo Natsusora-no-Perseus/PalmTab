@@ -82,6 +82,7 @@ int main()
 	CurveEditor testCurve;
 	testCurve.setScalingFactor(0.500);
 	testCurve.setBezierSubIntv(128);
+	testCurve.setOrderScalingFactor(0.20);
 	
 	int resultNodeValue = 0;
 	int yReturnVal = 0;
@@ -97,7 +98,7 @@ int main()
 	testCurve.setNode(160, 50);
 	testCurve.setNode(10, 10);
 	testCurve.setNode(210, 210);
-	testCurve.setNode(180, 10);
+	testCurve.setNode(180, 60);
 	testCurve.setNode(190, 100);
 	
 	
@@ -298,14 +299,9 @@ int main()
 			nodeSelectSta = 0;
 		}
 		
-		
-		
-		
-				
 		//Draw the curve:
 		if (canDrawCurve == true)
 		{
-			drawNode(3, 580);//==Probe==
 			for (int i = 0; i <= 128; i ++)
 			{
 				//yReturnVal = testCurve.getCurveVal(i);
@@ -314,7 +310,6 @@ int main()
 				
 				//yReturnVal = testCurve.getCurveVal(i);
 				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
-				
 			}
 			
 			for (int i = 50; i <= 562; i ++)
