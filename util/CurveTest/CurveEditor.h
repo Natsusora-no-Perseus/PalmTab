@@ -29,6 +29,12 @@ public:
 		uint8_t xPos;
 		uint8_t yPos;
 	};
+	
+	struct FNodePos
+	{
+		float xPos;
+		float yPos;
+	};
 
 	/* Mutator functions: */
 	bool setNode(uint8_t nodeXPos, uint8_t nodeYPos);//Returns false if node can't be set
@@ -79,7 +85,8 @@ private:
 	NodePos getMidpoint(uint8_t nodeIndex);//Find midpoint between this node and next node
 	uint8_t getLength(uint8_t nodeIndex);//Find distance between this node and next node
 	void getShiftDist(uint8_t nodeIndex);//Find shift distance for this and next midpoint
-	NodePos getTPoint(NodePos point1, NodePos point2, float tValue);//Gets point at (tValue)th of the line segment
+	FNodePos getTPoint(NodePos point1, NodePos point2, float tValue);//Gets point at (tValue)th of the line segment
+	FNodePos getFTPoint(FNodePos point1, FNodePos point2, float tValue);
 	NodePos bezierRecursive(float tValue);//Gets the point on bezier curve at tValue.
 
 	/* Process functions in this library: */
