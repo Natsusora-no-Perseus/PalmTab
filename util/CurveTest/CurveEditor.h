@@ -39,7 +39,8 @@ public:
 	/* Mutator functions: */
 	bool setNode(uint8_t nodeXPos, uint8_t nodeYPos);//Returns false if node can't be set
 	void setScalingFactor(float scalingFactor);//Should be set between 0~1. Larger = "sharper" curve. Suggested value is 0.6.
-	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage. 
+	void setBezierSubIntv(uint8_t inputSubIntv);//Sets resolution of output nodes: Larger = more nodes, but higher memory usage.
+	void setOrderScalingFactor(float scalingFactor);//Shifts control points further. 0 = no effect.
 	
 	/* Accessor functions: */
 	NodePos getNode(uint8_t nodeIndex);//Returns nodeIndex'th user defined node.
@@ -78,6 +79,7 @@ private:
 	
 	float _scalingFactor;//Shrinks the distance between pairs of control points; adjusts "sharpness" of curve
 	uint8_t bezierSubIntv;//Number of subintervals that the bezier curve should have.
+	float _orderScalingFactor;//Shifts control points further
 	
 	
 
