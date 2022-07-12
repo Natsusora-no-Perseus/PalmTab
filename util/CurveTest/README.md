@@ -32,4 +32,5 @@ Click on the "EXIT" button in the bottom-right corner to end the program.<br/>
 
 ## Notes
 As mentioned above, this program is a quite sketchy one. Sometimes a mouse click may not be recognized, and when that happens, please try again.<br/>
-For the same reason, no value-limiting function has been implemented. Please keep your nodes some distance away from the borders of the curve box, otherwise some unprecedented errors may occur.
+For the same reason, no value-limiting function has been implemented. Please keep your nodes some distance away from the borders of the curve box, otherwise some unprecedented errors may occur.<br/>
+The "resultNodes" and "curveVal" button will not respond to mouse clicks unless the curve is updated for at least one time.
