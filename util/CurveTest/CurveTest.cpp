@@ -25,10 +25,48 @@ const int BKCOLOR = BLACK;//Background color, black
 const int LINECOLOR = WHITE;//Line color, white
 const int NODECOLOR = YELLOW;//Node color, yellow
 const int CURVECOLOR = LIGHTGREEN;//Curve points color
+const int RESULTCOLOR = LIGHTMAGENTA;//ResultNodes color
 const int RETICLE_COLOR = LIGHTGRAY;//Reticle color
 const int CROSSCOLOR = LIGHTCYAN;
+const int SLIDERCOLOR = LIGHTCYAN;
 
 bool isInCurveBox = false;//If cursor is in curve box
+
+bool showNodesList = true, showShiftedPoints = false, showResultNodes = false, showCurveVal = true;
+
+float tempScalingFa = 0.500, tempBezierSubIntv = 128, tempOrderScalingFa = 0.20;
+
+void drawSlider(int topLX, float fullRange, float& currVal, bool numDispFmt)//Draw a slider
+{
+	rectangle(topLX, 380, topLX + 35, 575);//Slider box
+	line(topLX + 18, 390, topLX + 18, 550);//Slider rail
+	
+	if (ismouseclick(WM_LBUTTONDOWN) && ((mousey() <= 550 && mousey() >= 390) && (mousex() > topLX && mousex() < topLX + 35)))
+	{
+		currVal = (((float)mousey() - 390) / 160) * fullRange;
+	}
+	
+	int tabPos = ((currVal / fullRange) * 160) + 390;
+	
+	for (int i = tabPos - 2; i <= tabPos + 2; i ++)
+	{
+		setcolor(SLIDERCOLOR);
+		line(topLX + 9, i, topLX + 27, i);//Slider tab
+		setcolor(LINECOLOR);
+	}
+	
+	char printBuff[5];
+	if (numDispFmt == true)
+	{
+		sprintf(printBuff, "%3.2f", currVal);//For 0.00
+	}
+	else
+	{
+		sprintf(printBuff, "%3.0f", currVal);//For 100
+	}
+	moveto(topLX + 3, 555);
+	outtext(printBuff);
+}
 
 struct Point
 {
@@ -70,9 +108,20 @@ Point convertNodePos(CurveEditor::NodePos inputNodePos)//Converts curve coordina
 	return (outputNodePos);
 }
 
+void toggleBoolState(bool& inputBool)
+{
+	if (inputBool == true)
+	{
+		inputBool = false;
+	}
+	else
+	{
+		inputBool = true;
+	}
+}
+
 int main()
 {
-        
 	//Init window:
 	initwindow(WINDOWWIDTH, WINDOWHEIGHT, "Curve Tester");
 	setbkcolor(BKCOLOR);
@@ -91,10 +140,11 @@ int main()
 	uint8_t nodeSelectSta = 0;//0 = Not active; 1 = Selecting; 2 = Creating new node
 	uint8_t selectedNode = 0;//Selected node
 	
+	
+	//Pre-loaded nodes
 	testCurve.setNode(30, 40);
 	testCurve.setNode(90, 120);
 	testCurve.setNode(120, 60);
-	testCurve.setNode(130, 40);
 	testCurve.setNode(160, 50);
 	testCurve.setNode(10, 10);
 	testCurve.setNode(210, 210);
@@ -102,8 +152,7 @@ int main()
 	testCurve.setNode(190, 100);
 	
 	
-	
-	while (!(ismouseclick(WM_LBUTTONDOWN) && ((mousex() >= 750) && (mousey() >= 575))))
+	while (!(ismouseclick(WM_LBUTTONDOWN) && ((mousex() >= 690) && (mousey() >= 575))))
     {
     	//# Curve Box:
     	rectangle(50, 50, 562, 562);
@@ -159,9 +208,32 @@ int main()
 		moveto(707, 252);
 		outtext("Delete Node");
 		
+		//## Draw indicator separater
+		line(710, 280, 710, 360);
+		//### Draw "Confirm" button
+		moveto(720, 362);
+		outtext("Confirm");
+		//### Draw "nodesList" button
+		line(690, 300, 800, 300);
+		moveto(727, 282);
+		outtext("nodeList");		
+		//### Draw "shiftedPointsList" button
+		line(690, 320, 800, 320);
+		moveto(713, 302);
+		outtext("shiftedPoints");		
+		//### Draw "resultNodes" button
+		line(690, 340, 800, 340);
+		moveto(717, 322);
+		outtext("resultNodes");
+		//### Draw "curveVal" button
+		line(690, 360, 800, 360);
+		moveto(728, 342);
+		outtext("curveVal");
+		
+		
 		//## Draw "EXIT" button
-		rectangle(750, 575, 800, 600);
-		moveto(760, 580);
+		rectangle(690, 575, 800, 600);
+		moveto(735, 580);
 		outtext("EXIT");
 		
 		//## Menu bar actions:
@@ -222,6 +294,35 @@ int main()
 				testCurve._nodesList.resize(testCurve._nodesList.size() - 1);
 				nodeSelectSta = 0;
 			}
+			
+			//## "Show Points"
+			if (mousex() > 690)
+			{	
+				if (mousey() > 280 && mousey() < 300)
+				{
+					toggleBoolState(showNodesList);
+				}
+				if (mousey() > 300 && mousey() < 320)
+				{
+					toggleBoolState(showShiftedPoints);
+				}
+				if (mousey() > 320 && mousey() < 340)
+				{
+					toggleBoolState(showResultNodes);
+				}
+				if (mousey() > 340 && mousey() < 360)
+				{
+					toggleBoolState(showCurveVal);
+				}
+			}
+			
+			//## "Confirm"
+			if (mousey() > 360 && mousey() < 380)
+			{
+				testCurve.setScalingFactor(tempScalingFa);
+				testCurve.setBezierSubIntv(tempBezierSubIntv);
+				testCurve.setOrderScalingFactor(tempOrderScalingFa);
+			}
 		}
 		
 		//# Draw Nodes:
@@ -233,17 +334,29 @@ int main()
 			outtext(">   <");
 			setcolor(LINECOLOR);
 		}
-		//## Draw all nodes
-		for (int i = 0; i < testCurve._nodesList.size(); i++)
+		//## Draw all user-defined nodes
+		if (showNodesList == true)
 		{
-			drawNode(convertNodePos(testCurve._nodesList[i]).xCood, convertNodePos(testCurve._nodesList[i]).yCood);
-		}
-		// Draw all shifted nodes
-		for (int i = 0; i < testCurve._shiftedPointsList.size(); i++)
-		{
-			drawCross(convertNodePos(testCurve._shiftedPointsList[i]).xCood, convertNodePos(testCurve._shiftedPointsList[i]).yCood);
+			moveto(695, 282);
+			outtext("#");
+			
+			for (int i = 0; i < testCurve._nodesList.size(); i++)
+			{
+				drawNode(convertNodePos(testCurve._nodesList[i]).xCood, convertNodePos(testCurve._nodesList[i]).yCood);
+			}
 		}
 		
+		//## Draw all shifted nodes
+		if (showShiftedPoints == true)
+		{
+			moveto(695, 302);
+			outtext("#");
+			
+			for (int i = 0; i < testCurve._shiftedPointsList.size(); i++)
+			{
+				drawCross(convertNodePos(testCurve._shiftedPointsList[i]).xCood, convertNodePos(testCurve._shiftedPointsList[i]).yCood);
+			}
+		}
 		
 		//# Draw reticle:
 		//## Read mouse zone:
@@ -299,84 +412,44 @@ int main()
 			nodeSelectSta = 0;
 		}
 		
-		//Draw the curve:
+		//# Draw the curve:
 		if (canDrawCurve == true)
 		{
-			for (int i = 0; i <= 128; i ++)
+			//## Draw resultNodes
+			if (showResultNodes == true)
 			{
-				//yReturnVal = testCurve.getCurveVal(i);
-				resultNodeValue = testCurve._resultNodes[i].yPos;
-				putpixel(testCurve._resultNodes[i].xPos * 2 + 50, 560 - resultNodeValue * 2, CURVECOLOR);
+				moveto(695, 322);
+				outtext("#");
 				
-				//yReturnVal = testCurve.getCurveVal(i);
-				//putpixel(i * 2 + 50, yReturnVal * 2 + 50, LIGHTCYAN);
+				for (int i = 0; i <= 128; i ++)
+				{
+					resultNodeValue = testCurve._resultNodes[i].yPos;
+					putpixel(testCurve._resultNodes[i].xPos * 2 + 50, 560 - resultNodeValue * 2, RESULTCOLOR);
+				}
 			}
 			
-			for (int i = 50; i <= 562; i ++)
+			//## Draw curveVal
+			if (showCurveVal == true)
 			{
-				yReturnVal = testCurve.getCurveVal((i - 50) / 2);
-				putpixel(i, 560 - yReturnVal * 2, LIGHTBLUE);
-			}
-			
-			/*
-			char chkNodesChar[5];
-			sprintf(chkNodesChar, "%i", testCurve.chkNodesSize());
-			moveto(100, 50);
-			outtext(chkNodesChar);
+				moveto(695, 342);
+				outtext("#");
 				
-			char chkMidptChar[5];
-			sprintf(chkMidptChar, "%i", testCurve.chkMidptSize());
-			moveto(100, 70);
-			outtext(chkMidptChar);
-			
-			char chkShiftedChar[5];
-			sprintf(chkShiftedChar, "%i", testCurve.chkShiftedSize());
-			moveto(100, 90);
-			outtext(chkShiftedChar);
-
-			char chkResultNodesChar[5];
-			sprintf(chkResultNodesChar, "%i", testCurve._resultNodes.size());
-			moveto(100, 110);
-			outtext(chkResultNodesChar);			
-			
-			
-			
-			moveto(200, 1);
-			
-			char chkResultChar[5];
-			
-			for (int i = 0; i < 50; i += 1)
-			{
-				moveto(570, i * 12);
-				sprintf(chkResultChar, "%i", testCurve._resultNodes[i].yPos);
-				outtext(chkResultChar);
+				for (int i = 50; i <= 562; i ++)
+				{
+					yReturnVal = testCurve.getCurveVal((i - 50) / 2);
+					putpixel(i, 560 - yReturnVal * 2, CURVECOLOR);
+				}
 			}
-			for (int i = 50; i < 100; i += 1)
-			{
-				moveto(605, (i - 50) * 12);
-				sprintf(chkResultChar, "%i", testCurve._resultNodes[i].yPos);
-				outtext(chkResultChar);
-			}
-			
-			char chkGeneralNodesChar[5];
-			for (int i = 0; i < 14; i += 1)
-			{
-				moveto(635, i * 15);
-				sprintf(chkGeneralNodesChar, "%i", testCurve._shiftedPointsList[i].yPos);
-				outtext(chkGeneralNodesChar);
-			}
-			*/
-			
-			
-			
-			
-			//drawNode(mousex(), testCurve.tempNodePos(mousex()));
-			//yReturnVal = testCurve.getCurveVal(mousex());
-			//drawNode(mousex(), yReturnVal);
 			
 		}
 		
-		    //Get mouse status:
+		//# Draw sliders
+		drawSlider(691, 3.00, tempScalingFa, true);
+		drawSlider(727, 256, tempBezierSubIntv, false);
+		drawSlider(763, 1.00, tempOrderScalingFa, true);
+		
+		
+		//Get mouse status:
     	if (ismouseclick(WM_LBUTTONDOWN))
 		{
 			clearmouseclick(WM_LBUTTONDOWN);
