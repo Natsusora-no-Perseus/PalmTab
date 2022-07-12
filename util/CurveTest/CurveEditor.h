@@ -22,7 +22,6 @@ using namespace std;
 class CurveEditor
 {
 public:
-	//CurveEditor();
 	
 	struct NodePos
 	{
@@ -54,13 +53,6 @@ public:
 	void updateShift();//Updates list shifted midpoints (a.k.a. control points for bezier curve)
 	void bezierList();//Places nodes in _resultNodes, for LUT use.
 	void swapNodes(NodePos *firstNode);//Swap two nodes
-	
-	
-	/* D E B U G G I N G   F U N C T I O N S: */
-	int chkShiftedSize();
-	int chkMidptSize();
-	int chkNodesSize();
-	int tempNodePos(uint8_t tempNodeNo);
 	
 	vector<NodePos> _nodesList;//Stores list of NodePos
 	vector<NodePos> _midpointsList;//Stores list of midpoints

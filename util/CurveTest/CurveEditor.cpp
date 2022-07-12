@@ -14,9 +14,6 @@ bool CurveEditor::setNode(uint8_t nodeXPos, uint8_t nodeYPos)
 	NodePos newNode;
 	newNode.xPos = nodeXPos;
 	newNode.yPos = nodeYPos;
-	
-	//_nodesList.push_back(newNode);
-	//uint8_t nodeIndex = _nodesList.size() - 1;
 
 	if (_nodesList.size() == 0)
 	{
@@ -75,15 +72,12 @@ uint8_t CurveEditor::getLength(uint8_t nodeIndex)//Find distance between this no
 	float yLen = _nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos;
 	tempVal = round(sqrt((float)xLen * (float)xLen + (float)yLen * (float)yLen));
 	return (tempVal);
-	//QUESTIONABLE
 }
 
 void CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, and puts two points in _shiftedPointsList
 {
 	float distProportion;
-	
-	//=============  T  E  M  P  O  R  A  R  Y      S  O  L  U  T  I  O  N  ==============
-	
+		
 	if (getLength(nodeIndex) == 0 || getLength(nodeIndex + 1) == 0)
 	{
 		distProportion = 0;//Prevent a divisor with value 0.
@@ -205,16 +199,7 @@ void CurveEditor::bezierList()//Places nodes in _resultNodes.
 	{
 		tValueNow = (float)intvCount / (float)bezierSubIntv;
 		
-		//_resultNodes.push_back(bezierRecursive(tValueNow));
 		_resultNodes[intvCount] = bezierRecursive(tValueNow);
-		//_resultNodes[intvCount] = getTPoint(_shiftedPointsList[intvCount], _shiftedPointsList[intvCount + 1], 0.550);
-		
-		/*
-		NodePos debugNode;// D E B U G
-		debugNode.xPos = intvCount;
-		debugNode.yPos = tValueNow * bezierSubIntv;
-		_resultNodes[intvCount] = debugNode;
-		*/
 	}
 	_resultNodes.resize(bezierSubIntv + 1);
 }
@@ -278,26 +263,4 @@ void CurveEditor::swapNodes(NodePos *firstNode)//Swap two nodes.
   NodePos tempNode = *(firstNode + 1);//Stores 2nd value
   *(firstNode + 1) = *firstNode;
   *firstNode = tempNode;
-}
-
-
-//Debug functions:
-int CurveEditor::chkShiftedSize()
-{
-	return (_shiftedPointsList.size());
-}
-
-int CurveEditor::chkMidptSize()
-{
-	return (_midpointsList.size());
-}
-
-int CurveEditor::chkNodesSize()
-{
-	return (_nodesList.size());
-}
-
-int CurveEditor::tempNodePos(uint8_t tempNodeNo)
-{
-	return (_resultNodes[tempNodeNo / 8].yPos);
 }
