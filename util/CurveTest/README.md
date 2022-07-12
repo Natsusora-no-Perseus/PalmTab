@@ -21,6 +21,13 @@ Click on "Delete Node" to delete the selected node.<br/>
 Click on "Update Nodes" after you have finished changing the nodes. This will refresh the curve.<br/>
 If you want to cancel selecting / moving / creating a node, move your cursor to the blank space around the curve box. The cursor crosshair will turn red, and clicking there will cancel the behaviour.<br/>
 
+You can find "nodeList" "shiftedPoints" "resultNodes" "curveVal" buttons below the "Delete Nodes" button. Click on them to show / hide these points in the curve box. A "#" will appear next to the button if it is set to "show".<br/>
+
+The three sliders, from left to right, respectively controls ScalingFactor, BezierSubIntv, and OrderScalingFactor. Click on them to change the value of these parameters, which is then displayed at the bottom of the sliders. Click on the "Confirm" button above them to confirm the changes.<br/>
+* ScalingFactor controls the "sharpness" of the curve. The larger its value is, the "sharper" the curve is.
+* BezierSubIntv controls the "precision" of the curve. The larger its value is, the more accurate and smooth the curve is.
+* OrderScalingFactor controls the "responsiveness" of the curve. As more nodes are added, each node will have a smaller effect on the curve. Increasing this parameter can compensate this reduction in effectiveness more.<br/>
+
 Click on the "EXIT" button in the bottom-right corner to end the program.<br/>
 
 ## Notes
