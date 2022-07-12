@@ -2,7 +2,7 @@
 ## Description
 This is a very sketchy GUI program for playing around with the CurveEditor library.<br/>
 You can place nodes and visualize the output curve using it.<br/>
-Due to its dependence on the WINBGIM library, 
+Due to its dependence on the WINBGIM library, it is only available for Windows, but should also run on GNU/Linux with Wine.<br/>
 *The CurveEditor.h used here is slightly different from the one used with the arduino program.*<br/>
 
 ## How to use
