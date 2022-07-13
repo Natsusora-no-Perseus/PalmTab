@@ -9,41 +9,50 @@
 
 #include "CurveEditor.h"
 
-bool CurveEditor::setNode(int8_t nodeXPos, int8_t nodeYPos)
+bool CurveEditor::setNode(uint8_t nodeXPos, uint8_t nodeYPos)
 {
 	NodePos newNode;
 	newNode.xPos = nodeXPos;
 	newNode.yPos = nodeYPos;
-	nodesList.push_back(newNode);
 
-	if (nodeIndex == 0)
+	if (_nodesList.size() == 0)
 	{
+		_nodesList.push_back(newNode);
 		return true;//First node created, no problem
 	}
-	else if (_nodesList[nodeIndex].xPos == nodeList[nodeIndex - 1].xPos)
+	
+	uint8_t nodeIndex = _nodesList.size() - 1;//Sets nodeIndex to last node in index
+	
+	for (int i = 0; i <= nodeIndex; i++)
 	{
-		return false;//Two vertically overlapping nodes, illegal
-	}
-	else if (nodeIndex != 0)
-	{
-		while (_nodesList[nodeIndex - 1].xPos > _nodesList[nodeIndex].xPos
+		if (nodeXPos == _nodesList[i].xPos)
 		{
-			swap(_nodesList[nodeIndex - 1], _nodesList[nodeIndex - 1]);//Rearrange nodesList by order of increasing xPos
+			return false;//Two vertically overlapping nodes, illegal
 		}
-		return true;
 	}
+	
+	_nodesList.push_back(newNode);//Legal node, push back
+	nodeIndex += 1;
+	while (_nodesList[nodeIndex - 1].xPos > _nodesList[nodeIndex].xPos)
+	{
+		swapNodes(&_nodesList[nodeIndex - 1]);//Rearrange nodesList by order of increasing xPos
+		nodeIndex --;
+	}
+	return true;
 }
 
-NodePos CurveEditor::getMidpoint(uint8_t nodeIndex)
+CurveEditor::NodePos CurveEditor::getMidpoint(uint8_t nodeIndex)
 {
 	NodePos midPoint;
-	midPoint.xPos = round((_nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos) / 2);
-	midPoint.yPos = round((_nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos) / 2);
+	
+	midPoint = _nodesList[nodeIndex];
+	midPoint.xPos = round((_nodesList[nodeIndex + 1].xPos + _nodesList[nodeIndex].xPos) / 2);
+	midPoint.yPos = round((_nodesList[nodeIndex + 1].yPos + _nodesList[nodeIndex].yPos) / 2);
 
 	return midPoint;
 }
 
-NodePos CurveEditor::updateMidpoint()
+void CurveEditor::updateMidpoint()
 {
 	uint8_t nodesCount = _nodesList.size();
 	_midpointsList.resize(nodesCount - 1);
@@ -52,50 +61,63 @@ NodePos CurveEditor::updateMidpoint()
 	for (uint8_t i = 0; i < nodesCount - 1; i++)
 	{
 		newMidpoint = getMidpoint(i);
-		_midpointsList.push_back(newMidpoint);
+		_midpointsList[i] = getMidpoint(i);
 	}
 }
 
-uint8_t CurveEditor::getLength(uint8_t nodeIndex)
+uint8_t CurveEditor::getLength(uint8_t nodeIndex)//Find distance between this node and next node
 {
-	uint8_t xLen = abs(_nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos);
-	uint8_t yLen = abs(_nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos);
-	return (round(sqrt(xLen * xLen + yLen * yLen)));
+	float tempVal;
+	float xLen = _nodesList[nodeIndex + 1].xPos - _nodesList[nodeIndex].xPos;
+	float yLen = _nodesList[nodeIndex + 1].yPos - _nodesList[nodeIndex].yPos;
+	tempVal = round(sqrt((float)xLen * (float)xLen + (float)yLen * (float)yLen));
+	return (tempVal);
 }
 
-NodePos CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, and puts two points in _shiftedPointsList
+void CurveEditor::getShiftDist(uint8_t nodeIndex)//Get needed shift distance, and puts two points in _shiftedPointsList
 {
-	float distProportion = getLength(nodeIndex) / getLength(nodeIndex + 1);//Proportion of distance between this and next node
+	float distProportion;
+		
+	if (getLength(nodeIndex) == 0 || getLength(nodeIndex + 1) == 0)
+	{
+		distProportion = 0;//Prevent a divisor with value 0.
+	}
+	else
+	{
+		distProportion = (float)getLength(nodeIndex) / ((float)getLength(nodeIndex) + (float)getLength(nodeIndex + 1));
+		//Proportion of distance between this and next node
+	}
 
 	NodePos biPoint;//The B_i point on line segment between two midpoints
 	biPoint = _midpointsList[nodeIndex];
-	biPoint.xPos += round((_midpointsList[nodeIndex + 1].xPos - _midpointsList[nodeIndex].xPos) * distProportion);
-	biPoint.yPos += round((_midpointsList[nodeIndex + 1].yPos - _midpointsList[nodeIndex].yPos) * distProportion);
+	biPoint.xPos += round((_midpointsList[nodeIndex + 1].xPos - _midpointsList[nodeIndex].xPos) * (float)distProportion);
+	biPoint.yPos += round((_midpointsList[nodeIndex + 1].yPos - _midpointsList[nodeIndex].yPos) * (float)distProportion);
 
-	NodePos shiftedPoint1, shiftedPoint2;
-
-	shiftedPoint1.xPos = _nodesList[nodeIndex + 1].xPos - biPoint.xPos;
-	shiftedPoint1.yPos = _nodesList[nodeIndex + 1].yPos - biPoint.yPos;//Shifting distance of midpoints (B_i to next node)
+	NodePos shiftedPoint1, shiftedPoint2;//Two control points
+	
+	shiftedPoint1 = _nodesList[nodeIndex + 1];
+	
+	//Shifts per order scaling factor:
+	shiftedPoint1.xPos += round((_nodesList[nodeIndex + 1].xPos - biPoint.xPos) * (_nodesList.size() * (float)_orderScalingFactor));
+	shiftedPoint1.yPos += round((_nodesList[nodeIndex + 1].yPos - biPoint.yPos) * (_nodesList.size() * (float)_orderScalingFactor));
+	
 	shiftedPoint2 = shiftedPoint1;
-
-	shiftedPoint1.xPos += _midpointsList[nodeIndex].xPos;
-	shiftedPoint1.yPos += _midpointsList[nodeIndex].yPos;
-	shiftedPoint2.xPos += _midpointsList[nodeIndex + 1].xPos;
-	shiftedPoint2.yPos += _midpointsList[nodeIndex + 1].yPos;//Shifts without scaling
-
-	shiftedPoint1.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * _scalingFactor);
-	shiftedPoint1.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * _scalingFactor);
-
-	shiftedPoint2.xPos += round((biPoint.xPos - _midpointsList[nodeIndex].xPos) * _scalingFactor);
-	shiftedPoint2.yPos += round((biPoint.yPos - _midpointsList[nodeIndex].yPos) * _scalingFactor);
-
+	
+	//Shifts per distance to B_i point
+	shiftedPoint1.xPos += round((_midpointsList[nodeIndex].xPos - biPoint.xPos) * (float)_scalingFactor);
+	shiftedPoint1.yPos += round((_midpointsList[nodeIndex].yPos - biPoint.yPos) * (float)_scalingFactor);
+	
+	shiftedPoint2.xPos += round((_midpointsList[nodeIndex + 1].xPos - biPoint.xPos) * (float)_scalingFactor);
+	shiftedPoint2.yPos += round((_midpointsList[nodeIndex + 1].yPos - biPoint.yPos) * (float)_scalingFactor);
+	
 	_shiftedPointsList[2 * nodeIndex] = shiftedPoint1;
 	_shiftedPointsList[2 * nodeIndex + 1] = shiftedPoint2;
+
 }
 
-NodePos CurveEditor::updateShift()
+void CurveEditor::updateShift()
 {
-	_shiftedPointsList.resize(_midpointsList.size() * 2 + 1);
+	_shiftedPointsList.resize((_midpointsList.size() - 1) * 2);
 
 	for (int i = 0; i < _midpointsList.size() - 1; i++)
 	{
@@ -113,48 +135,65 @@ void CurveEditor::setBezierSubIntv(uint8_t inputSubIntv)
 	bezierSubIntv = inputSubIntv;
 }
 
-FloatNodePos CurveEditor::getTPoint(FloatNodePos point1, FloatNodePos point2, float tValue)//Gets point at (tValue)th of the line segment
+void CurveEditor::setOrderScalingFactor(float scalingFactor)
 {
-	FloatNodePos outputVal;
-	outputVal.xPos = (point2.xPos - point1.xPos) * tValue + point1.xPos;
-	outputVal.yPos = (point2.yPos - point1.yPos) * tValue + point1.xPos;
-	
+	_orderScalingFactor = scalingFactor;
+}
+
+CurveEditor::FNodePos CurveEditor::getTPoint(NodePos point1, NodePos point2, float tValue)//Gets point at (tValue)th of the line segment
+{
+	FNodePos outputVal;
+	outputVal.xPos = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
+	outputVal.yPos = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
 	return outputVal;
 }
 
-NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point on bezier curve at tValue.
+CurveEditor::FNodePos CurveEditor::getFTPoint(FNodePos point1, FNodePos point2, float tValue)//Gets point at (tValue)th of the line segment
 {
-	vector<FloatNodePos> recursiveNodes(_shiftedPointsList.size() - 1);
+	FNodePos outputVal;
+	outputVal.xPos = ((point2.xPos - point1.xPos) * (float)tValue) + point1.xPos;
+	outputVal.yPos = ((point2.yPos - point1.yPos) * (float)tValue) + point1.yPos;
+	return outputVal;
+}
+
+CurveEditor::NodePos CurveEditor::bezierRecursive(float tValue)//Gets the point on bezier curve at tValue.
+{
+	vector<FNodePos> recursiveNodes(_shiftedPointsList.size() - 1);
 	
-	for (uint8_t i = 0; i <= _shiftedPointsList.size() - 1; i++)//Sets recursiveNodes to 1st level of recursion
+	uint8_t recursionDepth = _shiftedPointsList.size() - 1;//The required levels of calculation
+	
+	for (uint8_t i = 0; i < recursionDepth; i++)//Sets recursiveNodes to 1st level of recursion
 	{
 		recursiveNodes[i] = getTPoint(_shiftedPointsList[i], _shiftedPointsList[i + 1], tValue);
 	}
 	
-	uint8_t recursionDepth = recursiveNodes.size() - 1;//The required levels of calculation
+	recursionDepth = recursiveNodes.size();//The required levels of calculation
 	
-	for (uint8_t n = 0; n < recursionDepth; n++)
+	for (uint8_t n = 0; n < recursionDepth - 1; n++)
 	{
-		for (uint8_t m = 0; m < recursionDepth - n; n++)
+		for (uint8_t m = 0; m < recursionDepth - n - 1; m++)
 		{
-			recursiveNodes[m] = getTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
+			recursiveNodes[m] = getFTPoint(recursiveNodes[m], recursiveNodes[m + 1], tValue);
 		}
 		
 		recursiveNodes.resize(recursionDepth - n);
 	}
 	
-	uint8_t outputVal = round(recursiveNodes[0]);
-	return (outputVal);
+	NodePos outputNode;
+	outputNode.xPos = round(recursiveNodes[0].xPos);
+	outputNode.yPos = round(recursiveNodes[0].yPos);
+	return (outputNode);
 }
 
-NodePos CurveEditor::bezierList()//Places nodes in _resultNodes.
+void CurveEditor::bezierList()//Places nodes in _resultNodes.
 {
-	float tValueNow;
+	_resultNodes.resize(bezierSubIntv + 1);
+	float tValueNow = 0.00;
 	for (uint8_t intvCount = 0; intvCount <= bezierSubIntv; intvCount++)
 	{
-		tValueNow = intvCount * (1 / bezierSubIntv);
+		tValueNow = (float)intvCount / (float)bezierSubIntv;
 		
-		_resultNodes.push_back(bezierRecursive(tValueNow));
+		_resultNodes[intvCount] = bezierRecursive(tValueNow);
 	}
 	_resultNodes.resize(bezierSubIntv + 1);
 }
@@ -166,4 +205,56 @@ void CurveEditor::updateAll()//Update everything in sequence to generate a new L
 	_midpointsList.resize(2);//Destroy _midpointsList to save memory.
 	bezierList();
 	_shiftedPointsList.resize(2);//Destory _shiftedPointsList to save memory.
+}
+
+CurveEditor::NodePos CurveEditor::getNode(uint8_t nodeIndex)//Returns nodeIndex'th user defined node
+{
+	return (_nodesList[nodeIndex]);
+}
+
+uint8_t CurveEditor::getCurveVal(uint8_t curveXPos)//Returns the Y coordinate corresponding to curveXPos.
+{
+	uint8_t resultListSize = _resultNodes.size();
+	
+	if (_resultNodes[resultListSize - 1].xPos <= curveXPos)//Requested X coordinate larger than all resultNodes.
+	{
+		return (_resultNodes[resultListSize - 1].yPos);//Returns Y coordinate of last resultNode.
+	}
+	else if (_resultNodes[0].xPos >= curveXPos)//Requested X coordinate smaller than all resultNodes.
+	{
+		return (_resultNodes[0].yPos);//Returns Y coordinate of first resultNode.
+	}
+	
+	//Index of the resultNode currently been read. Initialized to roughly get closer to the desired resultNodes:
+	uint8_t readIndex = resultListSize * (curveXPos / (_resultNodes[resultListSize].xPos - _resultNodes[0].xPos));
+	
+	float locationRatio;//The desired node's position on the line between two nodes
+	
+	if (_resultNodes[readIndex].xPos <= curveXPos)//Determine the iteration direction of readIndex.
+	{
+		while (_resultNodes[readIndex + 1].xPos <= curveXPos)//Iterate to the right.
+		{
+			readIndex++;//Set readIndex to lower bound.
+		}
+		
+		locationRatio = (curveXPos - _resultNodes[readIndex].xPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos);
+		return ((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) * (float)locationRatio + _resultNodes[readIndex].yPos);
+	}
+	else
+	{
+		while (_resultNodes[readIndex - 1].xPos >= curveXPos)//Iterate to the right.
+		{
+			readIndex--;
+		}
+		readIndex--;//Set readIndex to lower bound.
+		locationRatio = (curveXPos - _resultNodes[readIndex].xPos) / (_resultNodes[readIndex + 1].xPos - _resultNodes[readIndex].xPos);
+		return ((_resultNodes[readIndex + 1].yPos - _resultNodes[readIndex].yPos) * (float)locationRatio + _resultNodes[readIndex].yPos);
+	}
+}
+
+void CurveEditor::swapNodes(NodePos *firstNode)//Swap two nodes.
+{
+  NodePos tempNode = *(firstNode + 1);//Stores 2nd value
+  *(firstNode + 1) = *firstNode;
+  *firstNode = tempNode;
 }
