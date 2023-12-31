@@ -1,5 +1,6 @@
 # PalmTab
-*This is currently a work-in-progress project, and everything are subject to changes. You should not expect anything to work at this moment.*
+~~*This is currently a work-in-progress project, and everything are subject to changes. You should not expect anything to work at this moment.*~~
+**THIS REPOSITORY HAS BEEN SEMI-PERMANENTLY ABANDONED. THERE ARE NO PLANS TO BRING IT BACK IN FORESEEABLE FUTURE.**
 
 ## Description
 An Arduino-based mini keyboard with a joystick as mouse, for use as a media PC remote control or in other applications.
